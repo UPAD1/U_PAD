@@ -32,10 +32,12 @@ export const FileUplodButton = ({
               <>
                 <span className="text-blue-500 text-sm mb-1">
                   Upload {filetype}{" "}
-                  <span className="text-white">or drag and drop</span>
+                  <span className="text-gray-900">or drag and drop</span>
                   <br />
                 </span>
-                <span className="text-white text-l">{fileExtensionsText}</span>
+                <span className="text-gray-900 text-l">
+                  {fileExtensionsText}
+                </span>
               </>
             )}
             {/* 파일이 선택되면 파일 이름만 표시 */}

@@ -6,14 +6,12 @@ import Image from "./pages/image";
 import Video from "./pages/video";
 import Navbar from "./components/Navbar";
 import { Footer } from "./components/Footer";
+import "./assets/animate.css";
 
 function App() {
   return (
     <>
       <div>
-        <main className="p-4 text-center text-gray-700">
-          Hello, React + Tailwind!
-        </main>
         <Navbar />
         <Routes>
           <Route path="/" element={<Homee />}></Route>

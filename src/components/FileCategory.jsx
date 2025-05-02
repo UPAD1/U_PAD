@@ -6,13 +6,16 @@ export default function FileCategory({ id }) {
     <>
       {/*<!-- Component: Three columns even layout --> */}
       <div id={id} className="container m-auto py-20">
+        <h2 class="mb-5 text-3xl pb-6 text-center font-bold text-dark dark:text-white sm:text-4xl md:text-[40px] md:leading-[1.2]">
+          원하는 파일을 선택하세요
+        </h2>
         <div className="grid grid-cols-4 gap-6 md:grid-cols-3 lg:grid-cols-12 mx-10 px-5">
           <Link
             to="pages/Document"
             className="col-span-4 p-4 m-2 hover:bg-gray-200 rounded-xl transition-all duration-300 ease-in-out"
           >
             <div className="flex flex-col items-start gap-4 p-2">
-              <div className="flex items-center rounded-[10px] bg-blue-500 p-4 text-white">
+              <div className="flex items-center rounded-[10px] bg-[#2c7eff] p-4 text-white">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -31,13 +34,61 @@ export default function FileCategory({ id }) {
               <div className="flex w-full min-w-0 flex-col items-start justify-center gap-0 text-base">
                 <p className="text-slate-500 pb-2">
                   <strong className=" text-slate-700 font-bold text-2xl">
-                    Document Masking:
+                    Document Masking
                   </strong>{" "}
                 </p>
-                <p className="font-xl">
-                  Wind UI ensures your web application looks and functions
-                  flawlessly on various devices, from smartphones to desktops.
-                </p>
+                <div class="py-6">
+                  <ul class="space-y-4">
+                    <li class="flex items-start gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-6 h-6 p-1 shrink-0 text-blue-400"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule=""
+                          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      PDF
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-6 h-6 p-1 shrink-0 text-blue-400"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      WORD(doc, docs)
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-6 h-6 p-1 shrink-0 text-blue-400"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      TXT
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </Link>
@@ -46,7 +97,7 @@ export default function FileCategory({ id }) {
             className="col-span-4 p-4 m-2 hover:bg-gray-200 rounded-xl transition-all duration-300 ease-in-out"
           >
             <div className="flex flex-col items-start gap-4 p-2">
-              <div className="flex items-center rounded-[10px] bg-blue-500 p-4 text-white">
+              <div className="flex items-center rounded-[10px] bg-[#2c7eff] p-4 text-white">
                 <svg
                   class="size-9"
                   stroke-width="1.5"
@@ -81,13 +132,61 @@ export default function FileCategory({ id }) {
               <div className="flex w-full min-w-0 flex-col items-start justify-center gap-0 text-base">
                 <p className="text-slate-500 pb-2">
                   <strong className=" text-slate-700 font-bold text-2xl">
-                    Image Masking:
+                    Image Masking
                   </strong>{" "}
                 </p>
-                <p className="font-xl">
-                  Wind UI ensures your web application looks and functions
-                  flawlessly on various devices, from smartphones to desktops.
-                </p>
+                <div class="py-6">
+                  <ul class="space-y-4">
+                    <li class="flex items-start gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-6 h-6 p-1 shrink-0 text-blue-400"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule=""
+                          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      JPG
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-6 h-6 p-1 shrink-0 text-blue-400"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      JPEG
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-6 h-6 p-1 shrink-0 text-blue-400"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      PNG
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </Link>
@@ -96,7 +195,7 @@ export default function FileCategory({ id }) {
             className="col-span-4 p-4 m-2 hover:bg-gray-200 rounded-xl transition-all duration-300 ease-in-out"
           >
             <div className="flex flex-col items-start gap-4 p-2">
-              <div className="flex items-center rounded-[10px] bg-blue-500 p-4 text-white">
+              <div className="flex items-center rounded-[10px] bg-[#2c7eff] p-4 text-white">
                 <svg
                   class="size-9"
                   stroke-width="1.5"
@@ -124,13 +223,61 @@ export default function FileCategory({ id }) {
               <div className="flex w-full min-w-0 flex-col items-start justify-center gap-0 text-base">
                 <p className="text-slate-500 pb-2">
                   <strong className=" text-slate-700 font-bold text-2xl">
-                    Video Masking:
+                    Video Masking
                   </strong>{" "}
                 </p>
-                <p className="font-xl">
-                  Wind UI ensures your web application looks and functions
-                  flawlessly on various devices, from smartphones to desktops.
-                </p>
+                <div class="py-6">
+                  <ul class="space-y-4">
+                    <li class="flex items-start gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-6 h-6 p-1 shrink-0 text-blue-400"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule=""
+                          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      GIF
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-6 h-6 p-1 shrink-0 text-blue-400"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      MP3
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="w-6 h-6 p-1 shrink-0 text-blue-400"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      MP4
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </Link>
