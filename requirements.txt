@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+
+Pillow
+
+pymupdf
+
+google-cloud-dlp
+python-dotenv
+
+pytesseract
+opencv-python

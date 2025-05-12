@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🎥 영상 업로드</title>
+</head>
+<body>
+  <h2>🎥 영상 업로드</h2>
+
+  <form action="/upload/video" enctype="multipart/form-data" method="post">
+    <input type="file" name="file">
+    <input type="submit" value="업로드">
+  </form>
+
+  {% if video_path %}
+    <h3>비식별화된 영상 미리보기:</h3>
+    <video width="400" controls>
+      <source src="{{ video_path }}" type="video/mp4">
+      브라우저가 영상을 지원하지 않습니다.
+    </video>
+    <br>
+    <a href="{{ video_path }}" download>🔗 다운로드하기</a>
+
+    <h3>추출된 텍스트:</h3>
+    <pre>{{ text }}</pre>
+
+    <h3>🔍 민감정보 검출 결과:</h3>
+    {% if findings and findings|length > 0 %}
+      <ul>
+        {% for finding in findings %}
+          <li>
+            <strong>유형:</strong> {{ finding.info_type }}<br>
+            <strong>민감도:</strong> {{ finding.likelihood }}<br>
+            <strong>발견된 내용:</strong> {{ finding.quote }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>✅ 민감정보가 발견되지 않았습니다.</p>
+    {% endif %}
+  {% endif %}
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>📄 문서 업로드</title>
+</head>
+<body>
+  <h2>📄 문서 업로드</h2>
+
+  <form action="/upload/document" enctype="multipart/form-data" method="post">
+    <input type="file" name="file">
+    <input type="submit" value="업로드">
+  </form>
+
+  {% if doc_path %}
+    <h3>비식별화된 파일 다운로드:</h3>
+    <a href="{{ doc_path }}" download>🔗 다운로드하기</a>
+
+    <h3>추출된 텍스트:</h3>
+    <pre>{{ text }}</pre>
+
+    <h3>민감 정보 검출 결과:</h3>
+    {% if findings and findings|length > 0 %}
+      <ul>
+        {% for finding in findings %}
+          <li>
+            <b>유형:</b> {{ finding.info_type }}<br/>
+            <b>민감도:</b> {{ finding.likelihood }}<br/>
+            <b>검출된 내용:</b> {{ finding.quote }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>민감 정보가 검출되지 않았습니다.</p>
+    {% endif %}
+  {% endif %}
+</body>
+</html>
