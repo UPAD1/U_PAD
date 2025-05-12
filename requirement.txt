@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+
+sqlalchemy
+psycopg2-binary
+
+Pillow
+pymupdf
+
+google-cloud-dlp
+python-dotenv
+
+pytesseract
+opencv-python
