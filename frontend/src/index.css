@@ -1,0 +1,26 @@
+/* @import는 CSS 규칙들보다 반드시 위에 위치해야 합니다. */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css");
+@import "tailwindcss";
+
+/* html, body 스타일 규칙 */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Pretendard Variable", Pretendard, sans-serif; /* 두 번째 선언만 사용 */
+  background: white;
+  color: black;
+  scroll-behavior: smooth;
+}
+
+@layer utilities {
+  .custom-scrollbar {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: transparent transparent; /* Firefox thumb / track */
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+}
