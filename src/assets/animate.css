@@ -231,7 +231,6 @@ animation-full-mode는 애니메이션 전후 상태를 유지*/
   animation-duration: 3s;
 }
 
-
 @media (print), (prefers-reduced-motion: reduce) {
   .animated {
     -webkit-animation-duration: 1ms !important;

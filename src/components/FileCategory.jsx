@@ -1,18 +1,22 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { forwardRef } from "react";
 
-export default function FileCategory({ id }) {
+const FileCategory = forwardRef((props, ref) => {
   return (
     <>
       {/*<!-- Component: Three columns even layout --> */}
-      <div id={id} className="container m-auto py-20">
+      <div ref={ref} className="container m-auto py-20">
         <h2 class="mb-5 text-3xl pb-6 text-center font-bold text-dark dark:text-white sm:text-4xl md:text-[40px] md:leading-[1.2]">
           원하는 파일을 선택하세요
         </h2>
+
         <div className="grid grid-cols-4 gap-6 md:grid-cols-3 lg:grid-cols-12 mx-10 px-5">
+          {/* 네모1 */}
           <Link
             to="pages/Document"
             className="col-span-4 p-4 m-2 hover:bg-gray-200 rounded-xl transition-all duration-300 ease-in-out"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}       
           >
             <div className="flex flex-col items-start gap-4 p-2">
               <div className="flex items-center rounded-[10px] bg-[#2c7eff] p-4 text-white">
@@ -92,8 +96,10 @@ export default function FileCategory({ id }) {
               </div>
             </div>
           </Link>
+          {/* 네모2 */}
           <Link
             to="pages/Image"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
             className="col-span-4 p-4 m-2 hover:bg-gray-200 rounded-xl transition-all duration-300 ease-in-out"
           >
             <div className="flex flex-col items-start gap-4 p-2">
@@ -190,8 +196,10 @@ export default function FileCategory({ id }) {
               </div>
             </div>
           </Link>
+          {/* 네모3 */}
           <Link
             to="pages/Video"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
             className="col-span-4 p-4 m-2 hover:bg-gray-200 rounded-xl transition-all duration-300 ease-in-out"
           >
             <div className="flex flex-col items-start gap-4 p-2">
@@ -286,4 +294,6 @@ export default function FileCategory({ id }) {
       {/*<!-- End Three columns even layout --> */}
     </>
   );
-}
+});
+
+export default FileCategory;

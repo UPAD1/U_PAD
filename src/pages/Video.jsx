@@ -1,20 +1,30 @@
-import { Header } from "../components/Header";
-import { FileUplodButton } from "../components/FileUploadButton";
 import { HeaderPage } from "../components/HeaderPage";
+import StepperUploader from "../components/StepperUploader";
+import { useState } from "react";
 
 function Video() {
+  const [file1, setFile1] = useState(null);
+  const [file2, setFile2] = useState(null);
   return (
     <>
       <HeaderPage
-        title="원하는 영상을 넣어보세요"
         strong="<동영상 마스킹>"
-        description="동영상에 있는 얼굴과 텍스트를 쉽고 빠르게 마스킹합니다."
+        description="동영상에 있는 얼굴을 쉽고 빠르게 마스킹합니다."
       >
-        <FileUplodButton
-          fileExtensions=".gif, .mp3, .mp4"
-          filetype="Video"
-          fileExtensionsText="GIF, MP3, MP4"
-        ></FileUplodButton>
+        <StepperUploader
+          fileUploadData1={{
+            fileExtensions: ".mp4, .mov, .avi",
+            fileExtensionsText: "MP4, MOV, AVI",
+            onFileSelect: setFile1,
+            selectedFile: file1,
+          }}
+          fileUploadData2={{
+            fileExtensions: ".jpg, .jpeg, .png",
+            fileExtensionsText: "JPG, JPEG, PNG",
+            onFileSelect: setFile2,
+            selectedFile: file2,
+          }}
+        />
       </HeaderPage>
       <div className="m-10"></div>
     </>

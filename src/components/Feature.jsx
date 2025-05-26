@@ -1,10 +1,10 @@
-import React from "react";
+import React, { forwardRef } from "react";
 
-export const Feature = ({ id }) => {
+export const Feature = forwardRef((props, ref) => {
   return (
     <>
       <section
-        id={id}
+        ref={ref}
         class="pb-8 pt-20 dark:bg-dark lg:pb-[70px] lg:pt-[120px] bg-gray-50"
       >
         <div class="container px-5 mx-auto">
@@ -278,4 +278,4 @@ export const Feature = ({ id }) => {
       </section>
     </>
   );
-};
+});
