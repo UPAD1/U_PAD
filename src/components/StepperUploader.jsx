@@ -6,6 +6,7 @@ const StepperUploader = ({
   fileUploadData1,
   fileUploadData2,
   onFileUpload,
+  pageId,
 }) => {
   const [step, setStep] = useState(1);
   const [subStep, setSubStep] = useState(null);
@@ -13,6 +14,8 @@ const StepperUploader = ({
     file1: null,
     file2: null,
   });
+
+  console.log("Uploader: Received pageId =", pageId);
 
   const steps = [
     {
@@ -76,8 +79,10 @@ const StepperUploader = ({
     const formData = new FormData();
     formData.append("file", selectedFiles.file1);
 
+    const endpoint = `http://localhost:8000/upload/${pageId}`;
+
     try {
-      const response = await fetch("http://localhost:8000/upload/image", {
+      const response = await fetch(endpoint, {
         method: "POST",
         body: formData,
       });

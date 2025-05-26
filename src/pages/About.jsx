@@ -45,6 +45,7 @@ function About() {
               fileExtensionsText: "JPG, JPEG, PNG",
               onFileSelect: setFile1,
               selectedFile: file1,
+              pageId: "image",
             }}
             fileUploadData2={{
               filetype: "image2",
