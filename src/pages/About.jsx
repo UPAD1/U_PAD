@@ -1,6 +1,7 @@
 import { HeaderPage } from "../components/HeaderPage";
 import { useState } from "react";
 import StepperUploader from "../components/StepperUploader";
+import { UploadResult22 } from "../components/UploadResult22";
 import { UploadResult } from "../components/UploadResult";
 
 function About() {

@@ -27,7 +27,7 @@ function Image() {
     <>
       {uploadResult?.type === "success" ? (
         <div className="grid py-8 px-8 h-screen shado bg-gradient-to-b from-[#fcfcfc] from-50% to-[#a2cbeb] place-content-center dark:bg-gray-900 rounded-b-[70px]">
-          <div className="mx-auto w-full pt-10 px-5">
+          <div className="mx-auto w-full pt-7 px-5">
             <UploadResult
               onClose={handleClose}
               imageUrl={uploadResult.content.img_path}
