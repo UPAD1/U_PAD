@@ -3,4 +3,6 @@ static/uploads/
 __pycache__/
 *.pyc
 *.db
+stylegan2-ada-pytorch/
+*.Zone.Identifier
 

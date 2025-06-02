@@ -12,3 +12,5 @@ python-dotenv
 
 pytesseract
 opencv-python
+mediapipe
+numpy

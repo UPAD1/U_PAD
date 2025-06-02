@@ -14,6 +14,7 @@ from app.utils.video import process_video
 from app.utils.ocr import process_document
 from app.utils.image import process_image
 from app.routers import upload, ocr, masking, result
+from app.routers import mask_mascot
 #from app.dlp import app as dlp_app
 #from app.dlp import inspect_text
 
@@ -24,6 +25,7 @@ app.include_router(upload.router)
 app.include_router(ocr.router)
 app.include_router(masking.router)
 app.include_router(result.router)
+app.include_router(mask_mascot.router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 #app.mount("/dlp", dlp_app)
