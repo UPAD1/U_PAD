@@ -1,6 +1,6 @@
 import { HeaderPage } from "../components/HeaderPage";
 import { useState } from "react";
-import StepperUploader from "../components/StepperUploader";
+import UploaderPage from "../components/UploaderPage";
 import { UploadResult } from "../components/UploadResult";
 
 function About() {
@@ -34,7 +34,7 @@ function About() {
             imageUrl={uploadResult.content.img_path}
           />
         ) : (
-          <StepperUploader
+          <UploaderPage
             fileUploadData1={{
               filetype: "image1",
               fileExtensions: ".jpg, .jpeg, .png",
