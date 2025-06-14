@@ -139,16 +139,14 @@ export default function Navbar({ onFeatureClick, onFileCategoryClick }) {
             {!isMaskingPage && (
               <>
                 <li role="none" className="flex items-stretch">
-                  <button
-                    onClick={() =>
-                      window.scrollTo({ top: 0, behavior: "smooth" })
-                    }
+                  <Link
+                    to="/"
                     role="menuitem"
                     aria-haspopup="false"
                     className="flex items-center gap-2 py-4 transition-colors duration-300 hover:text-blue-500 focus:text-blue-600 focus:outline-none focus-visible:outline-none lg:px-8"
                   >
-                    <span>Home</span>
-                  </button>
+                    <span>home</span>
+                  </Link>
                 </li>
                 <li role="none" className="flex items-stretch">
                   <button

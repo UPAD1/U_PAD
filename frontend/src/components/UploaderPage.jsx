@@ -49,8 +49,6 @@ const UploaderPage = ({ fileUploadData1, onFileUpload }) => {
 
   return (
     <div className="min-w-5xl max-w-4xl mt-10 p-8 mx-auto justify-center bg-white rounded-xl shadow-md space-y-6">
-      
-
       <FileUploader
         className="min-h-[280px]"
         filetype={fileUploadData1.filetype}

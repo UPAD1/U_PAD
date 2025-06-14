@@ -46,7 +46,7 @@ const UploadIntro = ({
           <h2 className="text-4xl font-extrabold text-gray-900 leading-tight">
             {description?.headline || (
               <>
-                Mask your image in seconds with {" "}
+                Mask your image in seconds with{" "}
                 <span className="text-blue-500">U-PAD's</span> masking tool
               </>
             )}
@@ -59,7 +59,11 @@ const UploadIntro = ({
             {features.map((feature, i) => (
               <div key={i} className="flex items-start space-x-4">
                 <div className="p-3 bg-gray-200 rounded-xl">
-                  <img src={feature.icon} alt={`icon${i}`} className="w-6 h-6" />
+                  <img
+                    src={feature.icon}
+                    alt={`icon${i}`}
+                    className="w-6 h-6"
+                  />
                 </div>
                 <div>
                   <h4 className="font-bold text-gray-900">{feature.title}</h4>
