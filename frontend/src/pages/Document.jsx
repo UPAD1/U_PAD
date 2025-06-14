@@ -31,7 +31,6 @@ function Document() {
         />
       </HeaderPage>
 
-
       <UploadIntro
         imageSrc="/preview-doc.png" // 문서용 미리보기 이미지
         title="How to anonymize your documents in 3 easy steps"
@@ -81,7 +80,6 @@ function Document() {
         exampleBefore="/examples/doc-before.png"
         exampleAfter="/examples/doc-after.png"
       />
-
     </>
   );
 }

@@ -35,7 +35,8 @@ function Video() {
         description={{
           headline: (
             <>
-              Mask faces in your <span className="text-blue-500">videos</span> automatically
+              Mask faces in your <span className="text-blue-500">videos</span>{" "}
+              automatically
             </>
           ),
           subtext:
@@ -78,7 +79,6 @@ function Video() {
         exampleBefore="/examples/video-before.png"
         exampleAfter="/examples/video-after.png"
       />
-
     </>
   );
 }
