@@ -1,7 +1,6 @@
 import { HeaderPage } from "../components/HeaderPage";
 import { useState } from "react";
-import StepperUploader from "../components/StepperUploader";
-import { UploadResult22 } from "../components/UploadResult22";
+import UploaderPage from "../components/UploaderPage";
 import { UploadResult } from "../components/UploadResult";
 
 function About() {
@@ -26,8 +25,9 @@ function About() {
   return (
     <>
       {uploadResult?.type === "success" ? (
-        <div className="grid py-8 px-8 h-screen shado bg-gradient-to-b from-[#fcfcfc] from-50% to-[#a2cbeb] place-content-center dark:bg-gray-900 rounded-b-[70px]">
-          <div className="mx-auto w-full pt-10 px-5">
+        <div className="lg:grid py-8 px-8 h-screen shado bg-gradient-to-b from-[#fcfcfc] from-50% to-[#a2cbeb] place-content-center dark:bg-gray-900 rounded-b-[70px]">
+          <div className="mx-auto max-w-5xl w-full pt-10 px-5 sm:px-[5vw] lg:px-[3vw]"></div>
+          <div className="flex justify-center">
             <UploadResult
               onClose={handleClose}
               imageUrl={uploadResult.content.img_path}
@@ -39,14 +39,13 @@ function About() {
           strong="<이미지 마스킹>"
           description="이미지에 있는 얼굴과 텍스트를 쉽고 빠르게 마스킹합니다."
         >
-          <StepperUploader
+          <UploaderPage
             fileUploadData1={{
               filetype: "image1",
               fileExtensions: ".jpg, .jpeg, .png",
               fileExtensionsText: "JPG, JPEG, PNG",
               onFileSelect: setFile1,
               selectedFile: file1,
-              pageId: "image",
             }}
             fileUploadData2={{
               filetype: "image2",
@@ -59,7 +58,6 @@ function About() {
           />
         </HeaderPage>
       )}
-
       <div className="flex justify-center">
         <UploadResult
           onClose={handleClose}

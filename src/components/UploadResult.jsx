@@ -27,7 +27,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
   const [imageScale, setImageScale] = useState(1);
   const [selectedRectId, setSelectedRectId] = useState(null);
   const [selectedFillColor, setSelectedFillColor] = useState(
-    "rgba(255, 255, 255, 0.7)"
+    "rgba(255, 255, 255, 1)"
   );
   const [mascotImages, setMascotImages] = useState([]);
   const [selectedMascotImageId, setSelectedMascotImageId] = useState(null);
@@ -47,6 +47,9 @@ export const UploadResult = ({ onClose, imageUrl }) => {
 
   // 마스코트 이미지 URL (실제 사용할 마스코트 이미지 URL로 변경해주세요!)
   const MASCOT_IMAGE_URL = "../public/수룡이.png"; // 예시 이미지
+
+  // 마스코트 이미지 URL을 저장할 상태 추가
+  const [mascotImageUrl, setMascotImageUrl] = useState(null);
 
   const availableColors = [
     { color: "rgba(254, 67, 67)", name: "빨간색" },
@@ -368,45 +371,6 @@ export const UploadResult = ({ onClose, imageUrl }) => {
     }
   };
 
-  // --- 마스코트 추가 함수 ---
-  // --- 마스코트 추가 함수 ---
-  // 이 함수는 MascotLayer가 아닌 UploadResult에 유지되어야 합니다.
-  // 왜냐하면 새로운 마스코트 객체를 생성하고 상태(mascotImages)를 업데이트하기 때문입니다.
-  const handleAddMascot = () => {
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.src = MASCOT_IMAGE_URL;
-
-    img.onload = () => {
-      const initialMascotSize = Math.min(img.width, img.height) * 0.5;
-      const aspectRatio = img.width / img.height;
-
-      const newMascot = {
-        id: `mascot-${Date.now()}`,
-        nodeRef: React.createRef(),
-        konvaImage: img,
-        x:
-          (900 / 2 - (initialMascotSize * aspectRatio) / 2) / imageScale +
-          imagePosition.x / imageScale,
-        y:
-          (600 / 2 - initialMascotSize / 2) / imageScale +
-          imagePosition.y / imageScale,
-        width: initialMascotSize * aspectRatio,
-        height: initialMascotSize,
-        draggable: true,
-      };
-      const updatedMascots = [...mascotImages, newMascot];
-      updateHistory(rectangles, updatedMascots);
-      setDrawingMode(false);
-      setSelectedRectId(null);
-      setSelectedMascotImageId(newMascot.id); // 새로 추가된 마스코트가 바로 선택되도록 ID 설정
-    };
-
-    img.onerror = (err) => {
-      console.error("마스코트 이미지 로드 실패:", MASCOT_IMAGE_URL, err);
-    };
-  };
-
   const handleCustomColorChange = (color) => {
     const hexToRgb = (hex) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -474,54 +438,86 @@ export const UploadResult = ({ onClose, imageUrl }) => {
     document.body.removeChild(link);
   };
 
-  // 선택한 사각형의 투명도를 변경하는 함수 추가
-  const updateRectOpacity = (rectId, opacity) => {
+  // 1. updateRectOpacity 함수를 useRef로 만들어 의존성에서 제거하는 방법
+  const updateRectOpacityRef = useRef((rectId, opacity) => {
     const updatedRects = rectangles.map((rect) => {
       if (rect.id === rectId) {
-        // 현재 색상에서 투명도만 변경
         const currentColor = rect.fill;
         const rgbaMatch = currentColor.match(
           /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/
         );
-
         if (rgbaMatch) {
           const r = rgbaMatch[1];
           const g = rgbaMatch[2];
           const b = rgbaMatch[3];
-          return {
-            ...rect,
-            fill: `rgba(${r}, ${g}, ${b}, ${opacity})`,
-          };
+          return { ...rect, fill: `rgba(${r}, ${g}, ${b}, ${opacity})` };
         }
-        return rect;
       }
       return rect;
     });
-    // 상태 업데이트는 하되 히스토리에는 추가하지 않음 (임시 변경)
     setRectangles(updatedRects);
-  };
+  });
+
+  // updateRectOpacityRef는 항상 최신 rectangles를 참조하도록 업데이트
+  useEffect(() => {
+    updateRectOpacityRef.current = (rectId, opacity) => {
+      const updatedRects = rectangles.map((rect) => {
+        if (rect.id === rectId) {
+          const currentColor = rect.fill;
+          const rgbaMatch = currentColor.match(
+            /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/
+          );
+          if (rgbaMatch) {
+            const r = rgbaMatch[1];
+            const g = rgbaMatch[2];
+            const b = rgbaMatch[3];
+            return { ...rect, fill: `rgba(${r}, ${g}, ${b}, ${opacity})` };
+          }
+        }
+        return rect;
+      });
+      setRectangles(updatedRects);
+    };
+  }, [rectangles]);
+
+  // 1. rectanglesRef를 추가
+  const rectanglesRef = useRef(rectangles);
+  useEffect(() => {
+    rectanglesRef.current = rectangles;
+  }, [rectangles]);
 
   useEffect(() => {
     if (transformerRef.current && selectedRectId) {
       const node = nodeRef.current[selectedRectId];
       if (node) {
-        // Transformer에 노드 연결
         transformerRef.current.nodes([node]);
         transformerRef.current.getLayer().batchDraw();
-
-        // 선택된 사각형의 투명도 변경 (0.7)
-        updateRectOpacity(selectedRectId, 0.7);
+        updateRectOpacityRef.current(selectedRectId, 0.7);
       }
     } else if (selectedRectId === null) {
-      // 선택 해제시 모든 사각형 원래대로 복원 (히스토리에서 가져옴)
       const currentState = elementsHistory[currentElementsHistoryIndex];
       if (currentState) {
-        setRectangles(currentState.rectangles);
+        // rectanglesRef.current와 currentState.rectangles가 완전히 같은지 비교
+        const isSame =
+          rectanglesRef.current.length === currentState.rectangles.length &&
+          rectanglesRef.current.every((rect, idx) => {
+            const orig = currentState.rectangles[idx];
+            return (
+              rect.id === orig.id &&
+              rect.x === orig.x &&
+              rect.y === orig.y &&
+              rect.width === orig.width &&
+              rect.height === orig.height &&
+              rect.fill === orig.fill
+            );
+          });
+        if (!isSame) {
+          setRectangles(currentState.rectangles);
+        }
       }
     }
-  }, [selectedRectId]);
+  }, [selectedRectId, currentElementsHistoryIndex, elementsHistory]);
 
-  // onTransformEnd 함수 수정: 변환 완료 후 투명도를 원래대로 복원
   const handleTransformEnd = () => {
     const node = nodeRef.current[selectedRectId];
     if (!node) return;
@@ -538,38 +534,28 @@ export const UploadResult = ({ onClose, imageUrl }) => {
     const currentRect = rectangles.find((r) => r.id === selectedRectId);
     if (!currentRect) return;
 
-    // 색상에서 RGB 부분만 추출 (투명도는 원래대로)
+    // 색상에서 RGB 부분만 추출하고 항상 opacity 1로!
     const rgbaMatch = currentRect.fill.match(
       /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/
     );
-    let originalOpacity = 1;
-    if (rgbaMatch && rgbaMatch[4]) {
-      originalOpacity = parseFloat(rgbaMatch[4]);
+    let updatedFill = currentRect.fill;
+    if (rgbaMatch) {
+      const r = rgbaMatch[1];
+      const g = rgbaMatch[2];
+      const b = rgbaMatch[3];
+      updatedFill = `rgba(${r}, ${g}, ${b}, 1)`;
     }
 
     // 최종 업데이트된 사각형 배열
     const updatedRects = rectangles.map((rect) => {
       if (rect.id === selectedRectId) {
-        // 현재 색상의 RGB 부분만 가져와서 원래 투명도로 복원
-        const rgbaMatch = rect.fill.match(
-          /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/
-        );
-        let updatedFill = rect.fill;
-
-        if (rgbaMatch) {
-          const r = rgbaMatch[1];
-          const g = rgbaMatch[2];
-          const b = rgbaMatch[3];
-          updatedFill = `rgba(${r}, ${g}, ${b})`;
-        }
-
         return {
           ...rect,
           x: node.x(),
           y: node.y(),
           width: Math.max(5, node.width() * scaleX),
           height: Math.max(5, node.height() * scaleY),
-          fill: updatedFill,
+          fill: updatedFill, // 항상 불투명
         };
       }
       return rect;
@@ -577,6 +563,42 @@ export const UploadResult = ({ onClose, imageUrl }) => {
 
     // 히스토리 업데이트
     updateHistory(updatedRects, mascotImages);
+  };
+  // 사용자 정의 이미지로 마스코트 추가하는 함수
+  const handleAddMascotWithCustomImage = (customImageUrl) => {
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.src = customImageUrl;
+
+    img.onload = () => {
+      const initialMascotSize = Math.min(img.width, img.height) * 0.5;
+      const aspectRatio = img.width / img.height;
+
+      const newMascot = {
+        id: `mascot-${Date.now()}`,
+        nodeRef: React.createRef(),
+        konvaImage: img,
+        x:
+          (900 / 2 - (initialMascotSize * aspectRatio) / 2) / imageScale +
+          imagePosition.x / imageScale,
+        y:
+          (600 / 2 - initialMascotSize / 2) / imageScale +
+          imagePosition.y / imageScale,
+        width: initialMascotSize * aspectRatio,
+        height: initialMascotSize,
+        draggable: true,
+      };
+      const updatedMascots = [...mascotImages, newMascot];
+      updateHistory(rectangles, updatedMascots);
+      setDrawingMode(false);
+      setSelectedRectId(null);
+      setSelectedMascotImageId(newMascot.id); // 새로 추가된 마스코트가 바로 선택되도록 ID 설정
+    };
+
+    img.onerror = (err) => {
+      console.error("마스코트 이미지 로드 실패:", customImageUrl, err);
+      alert("이미지를 불러오는 데 실패했습니다. 다른 이미지를 시도해주세요.");
+    };
   };
 
   return (
@@ -977,9 +999,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                       />
                     </svg>
                   </button>
-                  <button className="px-1 py-2 shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)] rounded hover:ring-blue-300 hover:ring-2 focus:ring-blue-300 focus:ring-2 flex-1 flex items-center justify-center hover:ease-in-out transition">
-                    AI
-                  </button>
+
                   <button className="px-1 py-2 shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)] rounded hover:ring-blue-300 hover:ring-2 focus:ring-blue-300 focus:ring-2 flex-1 flex items-center justify-center hover:ease-in-out transition">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -1112,22 +1132,44 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                 {faceVisible && (
                   <div className="px-2 w-full">
                     <div className="mb-2 flex flex-col gap-3 p-2 bg-white rounded-lg shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)]">
-                      <p className="text-sm text-black mt-2 mx-1">
-                        얼굴 가리기
-                      </p>
+                      <p className="text-sm font-medium">얼굴 가리기</p>
                       <div className="flex-1 bg-white rounded-xl shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)] p-2">
-                        <FileUploader />
+                        {/* 여기서 FileUploader를 사용하여 마스코트 이미지 업로드 */}
+                        <FileUploader
+                          filetype="이미지"
+                          fileExtensions={["png", "jpg", "jpeg", "gif"]}
+                          fileExtensionsText="PNG, JPG, JPEG, GIF"
+                          onFileSelect={(file) => {
+                            // 파일이 선택되면 URL 생성
+                            const mascotImageUrl = URL.createObjectURL(file);
+                            // MASCOT_IMAGE_URL 대신 이 URL 사용
+                            // 상태에 저장
+                            setMascotImageUrl(mascotImageUrl);
+                          }}
+                        />
                         <button
-                          onClick={handleAddMascot}
-                          className="w-full bg-blue-500 text-white p-2 rounded-lg"
+                          onClick={() => {
+                            // mascotImageUrl이 있을 때만 마스코트 추가
+                            if (mascotImageUrl) {
+                              handleAddMascotWithCustomImage(mascotImageUrl);
+                            } else {
+                              alert("먼저 마스코트 이미지를 업로드해주세요");
+                            }
+                          }}
+                          className="w-full mt-2 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
                         >
                           마스코트로 가리기
                         </button>
                       </div>
                       <div className="flex flex-col gap-2 bg-white rounded-xl shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)] p-2">
+                        <p className="text-sm font-medium">효과 적용</p>
                         <div className="flex gap-2">
-                          <button>블러로 가리기</button>
-                          <button>모자이크로 가리기</button>
+                          <button className="px-3 py-2 bg-blue-500 text-white rounded-lg flex-1 hover:bg-blue-600 transition-colors">
+                            블러로 가리기
+                          </button>
+                          <button className="px-3 py-2 bg-gray-100 rounded-lg flex-1 hover:bg-gray-200 transition-colors">
+                            모자이크로 가리기
+                          </button>
                         </div>
                       </div>
                     </div>
