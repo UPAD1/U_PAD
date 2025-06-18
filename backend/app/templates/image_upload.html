@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🖼️ 이미지 업로드</title>
+</head>
+<body>
+  <h2>🖼️ 이미지 업로드</h2>
+
+  <form action="/upload/image" enctype="multipart/form-data" method="post">
+    <input type="file" name="file">
+    <input type="submit" value="업로드">
+  </form>
+
+  {% if img_path %}
+    <h3>비식별화된 이미지:</h3>
+    <img src="{{ img_path }}" width="400" alt="업로드된 이미지">
+
+    <h3>추출된 텍스트:</h3>
+    <pre>{{ text }}</pre>
+    
+    <h3>비식별화된 텍스트:</h3>
+    <pre>{{ deidentified_text }}</pre>
+    
+    {% if findings %}
+      <h3>🔍 민감정보 검출 결과:</h3>
+      <ul>
+        {% for finding in findings %}
+          <li>
+            <strong>유형:</strong> {{ finding.info_type }}<br>
+            <strong>민감도:</strong> {{ finding.likelihood }}<br>
+            <strong>발견된 내용:</strong> {{ finding.quote }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>✅ 민감 정보가 발견되지 않았습니다.</p>
+    {% endif %}
+  {% endif %}
+</body>
+</html>
+
