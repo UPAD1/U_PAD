@@ -10,16 +10,22 @@ export const Feature = forwardRef((props, ref) => {
         <div class="container px-5 mx-auto">
           <div class="flex flex-wrap -mx-4">
             <div class="w-full px-4">
-              <div class="mx-auto mb-12 max-w-[485px] text-center lg:mb-[70px]">
-                <span class="block mb-2 text-lg font-semibold text-primary">
-                  Features
+              <div class="mx-auto mb-12 max-w-[800px] text-center lg:mb-[70px]">
+                <span class="block mb-2 text-2xl font-semibold text-primary ">
+                  U-PAD 소개
                 </span>
-                <h2 class="mb-3 text-3xl font-bold text-dark dark:text-white sm:text-4xl md:text-[40px] md:leading-[1.2]">
-                  Main Features Of Play
+                <h2 class="mb-3 text-3xl font-bold text-dark dark:text-white sm:text-4xl md:text-[40px] md:leading-[1.2] break-keep">
+                  AI 기반 비정형 데이터 개인정보 솔루션
+                  <br></br>
                 </h2>
-                <p class="text-base text-body-color dark:text-dark-6">
-                  There are many variations of passages of Lorem Ipsum available
-                  but the majority have suffered alteration in some form.
+                <p class="text-base text-body-color dark:text-dark-6 0 md:text-lg break-keep">
+                  U-PAD는 AI 기반의 비정형 데이터 개인정보 보호 솔루션으로,{" "}
+                  <br></br>
+                  문서·이미지·영상 등 비정형 데이터 속 개인정보를 자동으로
+                  탐지하고 안전하게 비식별화합니다. <br></br>
+                  OCR, DLP, 얼굴 인식, 영상 프레임 분석 등 복합적인 기술을
+                  활용하여 이름, 전화번호, 주민등록번호, 개인 얼굴 등 주요
+                  개인정보를 정확하게 식별합니다.
                 </p>
               </div>
             </div>
@@ -45,17 +51,13 @@ export const Feature = forwardRef((props, ref) => {
                   </svg>
                 </div>
                 <h4 class="mb-3 text-xl font-bold text-dark dark:text-white">
-                  Free and Open-Source
+                  개인정보 자동 탐지
                 </h4>
                 <p class="mb-8 text-body-color dark:text-dark-6 lg:mb-9">
-                  Lorem Ipsum is simply dummy text of the printing and industry.
+                  · 문서 내 개인정보 탐지
+                  <br></br>· 이미지 속 얼굴 및 텍스트 탐지
+                  <br></br>· 영상 프레임 내 개인정보 탐지
                 </p>
-                <a
-                  href="javascript:void(0)"
-                  class="text-base font-medium text-dark hover:text-primary dark:text-white dark:hover:text-primary"
-                >
-                  Learn More
-                </a>
               </div>
             </div>
 
@@ -79,17 +81,13 @@ export const Feature = forwardRef((props, ref) => {
                   </svg>
                 </div>
                 <h4 class="mb-3 text-xl font-bold text-dark dark:text-white">
-                  Multipurpose Template
+                  여러 비식별화 방식 제공
                 </h4>
                 <p class="mb-8 text-body-color dark:text-dark-6 lg:mb-9">
-                  Lorem Ipsum is simply dummy text of the printing and industry.
+                  · 얼굴 마스코트 대체
+                  <br></br>· 모자이크 및 블러 처리
+                  <br></br>· AI 기반 표정 탐지 처리
                 </p>
-                <a
-                  href="javascript:void(0)"
-                  class="text-base font-medium text-dark hover:text-primary dark:text-white dark:hover:text-primary"
-                >
-                  Learn More
-                </a>
               </div>
             </div>
             <div class="w-full px-4 md:w-1/2 lg:w-1/4">
@@ -144,17 +142,14 @@ export const Feature = forwardRef((props, ref) => {
                   </svg>
                 </div>
                 <h4 class="mb-3 text-xl font-bold text-dark dark:text-white">
-                  High-quality Design
+                  다양한 산업군 적용 가능
                 </h4>
                 <p class="mb-8 text-body-color dark:text-dark-6 lg:mb-9">
-                  Lorem Ipsum is simply dummy text of the printing and industry.
+                  · 기업 자료 반출 관리
+                  <br></br>· 의료 영상 개인정보 비식별화
+                  <br></br>· 테마파크 촬영 이미지 보호
+                  <br></br>· 공공기관/교육기관 보고서 및 영상 자료 처리
                 </p>
-                <a
-                  href="javascript:void(0)"
-                  class="text-base font-medium text-dark hover:text-primary dark:text-white dark:hover:text-primary"
-                >
-                  Learn More
-                </a>
               </div>
             </div>
             <div class="w-full px-4 md:w-1/2 lg:w-1/4">
@@ -189,17 +184,11 @@ export const Feature = forwardRef((props, ref) => {
                   </svg>
                 </div>
                 <h4 class="mb-3 text-xl font-bold text-dark dark:text-white">
-                  All Essential Elements
+                  최신 법적 기준 준수
                 </h4>
                 <p class="mb-8 text-body-color dark:text-dark-6 lg:mb-9">
-                  Lorem Ipsum is simply dummy text of the printing and industry.
+                  개인정보보호법, GDPR 등 관련 법규 준수
                 </p>
-                <a
-                  href="javascript:void(0)"
-                  class="text-base font-medium text-dark hover:text-primary dark:text-white dark:hover:text-primary"
-                >
-                  Learn More
-                </a>
               </div>
             </div>
           </div>
@@ -216,14 +205,13 @@ export const Feature = forwardRef((props, ref) => {
             />
             <div className="flex flex-col justify-center flex-1 p-6 bg-gray-50">
               <span className="text-xs uppercase text-gray-600">
-                Join, it's free
+                PDF, doc, docs, TXT
               </span>
-              <h3 className="text-3xl font-bold">
-                We're not reinventing the wheel
-              </h3>
+              <h3 className="text-3xl font-bold">Document Masking</h3>
               <p className="my-6 text-gray-600">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor
-                aliquam possimus quas, error esse quos.
+                텍스트 기반 문서 내 이름, 주민등록번호, 전화번호 등 개인정보를
+                자동 탐지하고 <br></br>
+                안전하게 마스킹 처리합니다.
               </p>
               <button type="button" className="self-start">
                 Action
@@ -238,14 +226,13 @@ export const Feature = forwardRef((props, ref) => {
             />
             <div className="flex flex-col justify-center flex-1 p-6 bg-gray-50">
               <span className="text-xs uppercase text-gray-600">
-                Join, it's free
+                JPG, JPEG, PNG
               </span>
-              <h3 className="text-3xl font-bold">
-                We're not reinventing the wheel
-              </h3>
+              <h3 className="text-3xl font-bold">Image Masking</h3>
               <p className="my-6 text-gray-600">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor
-                aliquam possimus quas, error esse quos.
+                이미지 속 텍스트 개인정보뿐만 아니라 얼굴까지 자동 인식하여,
+                모자이크, 블러, 마스코트 대체 등 <br></br>
+                다양한 비식별화 방식을 제공합니다.
               </p>
               <button type="button" className="self-start">
                 Action
@@ -260,14 +247,12 @@ export const Feature = forwardRef((props, ref) => {
             />
             <div className="flex flex-col justify-center flex-1 p-6 bg-gray-50">
               <span className="text-xs uppercase text-gray-600">
-                Join, it's free
+                GIF, MP3, MP4
               </span>
-              <h3 className="text-3xl font-bold">
-                We're not reinventing the wheel
-              </h3>
+              <h3 className="text-3xl font-bold">Video Masking</h3>
               <p className="my-6 text-gray-600">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor
-                aliquam possimus quas, error esse quos.
+                영상의 각 프레임에서 텍스트 개인정보를 탐지하고 얼굴을
+                실시간으로 인식하여 자동 마스킹 처리합니다.
               </p>
               <button type="button" className="self-start">
                 Action

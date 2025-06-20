@@ -20,29 +20,44 @@ const UploadResultNew = ({ onClose, imageUrl, text, findings, ocr_blocks }) => {
   return (
     <>
       <div className="min-w-5xl max-w-7xl mt-10 justify-center bg-gray-50 rounded-2xl fadeInUp animated faster p-6 mx-auto">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">마스킹 결과</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+          마스킹 결과
+        </h2>
 
         {image && (
           <div className="mb-6">
-            <img src={image} alt="마스킹 이미지" className="w-full rounded-xl border" />
+            <img
+              src={image}
+              alt="마스킹 이미지"
+              className="w-full rounded-xl border"
+            />
           </div>
         )}
 
         {text && (
           <div className="mb-6">
             <h3 className="text-lg font-bold mb-2">OCR 추출 텍스트</h3>
-            <p className="bg-gray-100 p-3 rounded whitespace-pre-wrap text-sm text-gray-800">{text}</p>
+            <p className="bg-gray-100 p-3 rounded whitespace-pre-wrap text-sm text-gray-800">
+              {text}
+            </p>
           </div>
         )}
 
         {findings && findings.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-lg font-bold mb-2 text-red-600">감지된 민감정보</h3>
+            <h3 className="text-lg font-bold mb-2 text-red-600">
+              감지된 민감정보
+            </h3>
             <ul className="list-disc pl-5 text-sm text-gray-700">
               {findings.map((item, idx) => (
                 <li key={idx}>
                   {item.quote}
-                  {item.bbox && <span className="text-gray-400"> (위치: {item.bbox.join(", ")})</span>}
+                  {item.bbox && (
+                    <span className="text-gray-400">
+                      {" "}
+                      (위치: {item.bbox.join(", ")})
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
@@ -51,13 +66,17 @@ const UploadResultNew = ({ onClose, imageUrl, text, findings, ocr_blocks }) => {
 
         {ocr_blocks && ocr_blocks.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-lg font-bold mb-2 text-blue-600">OCR 블록 정보</h3>
+            <h3 className="text-lg font-bold mb-2 text-blue-600">
+              OCR 블록 정보
+            </h3>
             <ul className="text-sm space-y-1 text-gray-700">
               {ocr_blocks.map((block, idx) => (
                 <li key={idx}>
                   <strong>[{idx + 1}]</strong> {block.text}{" "}
                   {block.bbox && (
-                    <span className="text-gray-500">(위치: {block.bbox.join(", ")})</span>
+                    <span className="text-gray-500">
+                      (위치: {block.bbox.join(", ")})
+                    </span>
                   )}
                 </li>
               ))}

@@ -2,7 +2,7 @@ import "../assets/animate.css";
 export const HeaderPage = ({ title, strong, description, children }) => {
   return (
     <div className="lg:grid py-8 px-8 h-screen shado bg-gradient-to-b from-[#fcfcfc] from-50% to-[#a2cbeb] place-content-center dark:bg-gray-900 rounded-b-[70px]">
-      <div className="mx-auto max-w-5xl w-full pt-10 px-5 sm:px-[5vw] lg:px-[3vw]">
+      <div className="mx-auto max-w-5xl w-full pt-3 px-5 sm:px-[5vw] lg:px-[3vw]">
         <div className="mx-auto text-center fadeInUp animated slow">
           <h1 className="text-4xl font-bold sm:text-5xl text-gray-900 xs:text-xl whitespace-nowrap items-center">
             {title}

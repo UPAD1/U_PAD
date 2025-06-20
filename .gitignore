@@ -1,3 +1,8 @@
 .env
 backend/models/*.pkl
 backend/models/*.pkl
+u-pad-457417-97e28e58b947.json
+venv
+.test_vision.py
+/backend/static/uploads
+/backend/static/processed/
