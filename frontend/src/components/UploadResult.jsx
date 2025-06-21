@@ -6,8 +6,6 @@ import {
   Rect,
   Group,
   Transformer,
-  Circle,
-  Text,
 } from "react-konva";
 import "../assets/animate.css";
 
@@ -15,8 +13,9 @@ import MascotLayer from "./MascotLayer";
 import RectangleLayer from "./RectangleLayer";
 import { FileUploader } from "./FileUploader";
 import Konva from "konva";
+import { ToolButton } from "./ToolButton";
 
-export const UploadResult = ({ onClose, imageUrl }) => {
+export const UploadResult = ({ onClose, imageUrl, founds, findings }) => {
   const [image, setImage] = useState(null);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
@@ -36,8 +35,9 @@ export const UploadResult = ({ onClose, imageUrl }) => {
   ]);
   const [currentElementsHistoryIndex, setCurrentElementsHistoryIndex] =
     useState(0);
-  const [faceVisible, setFaceVisible] = useState(false);
+  const [faceVisible, setFaceVisible] = useState(true);
   const [textVisible, setTextVisible] = useState(false);
+  const [legalVisible, setLegalVisible] = useState(true);
   const [customColor, setCustomColor] = useState("#000000");
   const [originalFileExtension, setOriginalFileExtension] = useState("png");
 
@@ -47,6 +47,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
 
   // 마스코트 이미지 URL (실제 사용할 마스코트 이미지 URL로 변경해주세요!)
   const MASCOT_IMAGE_URL = "../public/수룡이.png"; // 예시 이미지
+  const [mascotFile, setMascotFile] = useState(null); // 실제 파일 객체
 
   // 마스코트 이미지 URL을 저장할 상태 추가
   const [mascotImageUrl, setMascotImageUrl] = useState(null);
@@ -102,7 +103,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
 
       setImage(img);
       // 이미지를 스테이지 중앙에 위치시키되, 스테이지 경계를 벗어나지 않도록 조정
-      const stageWidth = 900; // Stage 컴포넌트의 width
+      const stageWidth = 830; // Stage 컴포넌트의 width
       const stageHeight = 600; // Stage 컴포넌트의 height
       const scaledWidth = img.width * scale;
       const scaledHeight = img.height * scale;
@@ -196,6 +197,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
 
     // 드로잉 모드가 아닐 때는 선택 로직만 실행
     if (!drawingMode) {
+      // 스테이지 자체를 클릭했을 때만 선택 해제 (배경만 클릭했을 때)
       if (e.target === stage) {
         setSelectedRectId(null);
         setSelectedMascotImageId(null);
@@ -331,32 +333,35 @@ export const UploadResult = ({ onClose, imageUrl }) => {
   };
 
   const handleDelete = () => {
-    let updatedRects = rectangles;
-    let updatedMascots = mascotImages;
-    let changed = false;
+    console.log(
+      "삭제 버튼 클릭! 현재 선택된 ID:",
+      selectedRectId,
+      selectedMascotImageId
+    );
 
-    // ✨ 여기를 수정합니다.
-    // selectedRectId가 인덱스라면 numbers.filter((_, i) => i !== selectedRectId);
-    // selectedRectId가 ID라면 numbers.filter(item => item.id !== selectedRectId);
     if (selectedRectId !== null) {
-      // selectedRectId는 이제 선택된 사각형의 'ID' 입니다.
-      // ✨ 사각형 삭제 로직: ID를 기반으로 필터링
-      updatedRects = rectangles.filter((rect) => rect.id !== selectedRectId);
+      console.log("사각형 삭제:", selectedRectId);
+      const updatedRects = rectangles.filter(
+        (rect) => rect.id !== selectedRectId
+      );
       setSelectedRectId(null);
-      changed = true;
-    }
-    // 마스코트 삭제 로직 (이 부분은 이미 ID 기반이었습니다.)
-    else if (selectedMascotImageId !== null) {
-      updatedMascots = mascotImages.filter(
-        (img) => img.id !== selectedMascotImageId
+      updateHistory(updatedRects, mascotImages);
+    } else if (selectedMascotImageId !== null) {
+      console.log(
+        "마스코트 삭제:",
+        selectedMascotImageId,
+        "현재 마스코트:",
+        mascotImages.map((m) => m.id)
+      );
+      const updatedMascots = mascotImages.filter(
+        (img) => String(img.id) !== String(selectedMascotImageId)
+      );
+      console.log(
+        "필터링 후 마스코트:",
+        updatedMascots.map((m) => m.id)
       );
       setSelectedMascotImageId(null);
-      changed = true;
-    }
-
-    if (changed) {
-      // 변경 사항이 있을 때만 히스토리 업데이트
-      updateHistory(updatedRects, updatedMascots);
+      updateHistory(rectangles, updatedMascots);
     }
   };
 
@@ -479,6 +484,41 @@ export const UploadResult = ({ onClose, imageUrl }) => {
       setRectangles(updatedRects);
     };
   }, [rectangles]);
+  useEffect(() => {
+    if (selectedRectId) {
+      console.log("객체 선택됨:", selectedRectId);
+
+      // 선택된 객체의 opacity 설정
+      updateRectOpacity(selectedRectId, 0.7);
+
+      // Transformer 설정
+      const node = nodeRef.current[selectedRectId];
+      if (node && transformerRef.current) {
+        transformerRef.current.nodes([node]);
+        transformerRef.current.getLayer().batchDraw();
+      }
+    } else {
+      // 선택 해제 시
+      console.log("선택 해제됨");
+
+      // 모든 객체의 opacity를 1로 복원
+      setRectangles((prev) =>
+        prev.map((rect) => {
+          const rgbaMatch = rect.fill.match(
+            /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/
+          );
+
+          if (rgbaMatch) {
+            const r = rgbaMatch[1];
+            const g = rgbaMatch[2];
+            const b = rgbaMatch[3];
+            return { ...rect, fill: `rgba(${r}, ${g}, ${b}, 1)` };
+          }
+          return rect;
+        })
+      );
+    }
+  }, [selectedRectId]);
 
   // 1. rectanglesRef를 추가
   const rectanglesRef = useRef(rectangles);
@@ -518,9 +558,46 @@ export const UploadResult = ({ onClose, imageUrl }) => {
     }
   }, [selectedRectId, currentElementsHistoryIndex, elementsHistory]);
 
-  const handleTransformEnd = () => {
+  // 3. opacity 업데이트 함수를 별도로 분리하여 직접 호출
+  const updateRectOpacity = (rectId, opacity) => {
+    if (!rectId) return;
+
+    console.log(`opacity 업데이트: ${rectId} -> ${opacity}`);
+
+    setRectangles((prev) =>
+      prev.map((rect) => {
+        if (rect.id === rectId) {
+          const currentColor = rect.fill;
+          const rgbaMatch = currentColor.match(
+            /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/
+          );
+
+          if (rgbaMatch) {
+            const r = rgbaMatch[1];
+            const g = rgbaMatch[2];
+            const b = rgbaMatch[3];
+            const newFill = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+            console.log(`색상 변경: ${currentColor} -> ${newFill}`);
+            return { ...rect, fill: newFill };
+          }
+        }
+        return rect;
+      })
+    );
+  };
+
+  // 2. handleTransformEnd 함수 수정
+  const handleTransformEnd = (e) => {
+    // 로그 추가
+    console.log("Transform 종료됨:", selectedRectId);
+
+    if (!selectedRectId) return;
+
     const node = nodeRef.current[selectedRectId];
-    if (!node) return;
+    if (!node) {
+      console.log("노드를 찾을 수 없음:", selectedRectId);
+      return;
+    }
 
     // 현재 스케일 값 가져오기
     const scaleX = node.scaleX();
@@ -530,36 +607,34 @@ export const UploadResult = ({ onClose, imageUrl }) => {
     node.scaleX(1);
     node.scaleY(1);
 
-    // 현재 사각형 찾기
-    const currentRect = rectangles.find((r) => r.id === selectedRectId);
-    if (!currentRect) return;
-
-    // 색상에서 RGB 부분만 추출하고 항상 opacity 1로!
-    const rgbaMatch = currentRect.fill.match(
-      /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/
-    );
-    let updatedFill = currentRect.fill;
-    if (rgbaMatch) {
-      const r = rgbaMatch[1];
-      const g = rgbaMatch[2];
-      const b = rgbaMatch[3];
-      updatedFill = `rgba(${r}, ${g}, ${b}, 1)`;
-    }
+    // 직접 opacity 복원 함수 호출
+    updateRectOpacity(selectedRectId, 1.0);
 
     // 최종 업데이트된 사각형 배열
     const updatedRects = rectangles.map((rect) => {
       if (rect.id === selectedRectId) {
+        // 로그 추가
+        console.log("사각형 업데이트:", rect.id, "->", {
+          x: node.x(),
+          y: node.y(),
+          width: Math.max(5, node.width() * scaleX),
+          height: Math.max(5, node.height() * scaleY),
+        });
+
         return {
           ...rect,
           x: node.x(),
           y: node.y(),
           width: Math.max(5, node.width() * scaleX),
           height: Math.max(5, node.height() * scaleY),
-          fill: updatedFill, // 항상 불투명
+          // fill은 updateRectOpacity에서 처리하므로 변경하지 않음
         };
       }
       return rect;
     });
+
+    // 상태 업데이트
+    setRectangles(updatedRects);
 
     // 히스토리 업데이트
     updateHistory(updatedRects, mascotImages);
@@ -579,7 +654,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
         nodeRef: React.createRef(),
         konvaImage: img,
         x:
-          (900 / 2 - (initialMascotSize * aspectRatio) / 2) / imageScale +
+          (830 / 2 - (initialMascotSize * aspectRatio) / 2) / imageScale +
           imagePosition.x / imageScale,
         y:
           (600 / 2 - initialMascotSize / 2) / imageScale +
@@ -604,7 +679,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
   return (
     <>
       <div>
-        <div className="min-w-5xl max-w-7xl mt-10 justify-center bg-gray-50 rounded-2xl fadeInUp animated faster">
+        <div className="min-w-5xl max-w-7xl mt-8 justify-center bg-gray-50 rounded-2xl fadeInUp animated faster">
           <div className="h-10 rounded-t-xl justify-between flex text-2xl items-center px-3 py-3 bg-blue-50 shadow-[inset_0px_-2px_14px_-4px_rgba(0,_0,_0,_0.1)]">
             <span className="font-semibold text-blue-500">이미지 마스킹</span>
 
@@ -638,7 +713,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
             <div className="transition-all duration-300 animated slow rounded-xl flex-[2] bg-gray-200/40 shadow-[0px_-1px_33px_-27px_rgba(102,_102,_102,_1)] p-20 flex flex-col items-center justify-center aspect-[3/2] overflow-hidden">
               <Stage
                 ref={stageRef}
-                width={900}
+                width={830}
                 height={600}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
@@ -671,7 +746,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                         onDragMove={(e) => {
                           const pos = e.target.position();
 
-                          const stageWidth = 900;
+                          const stageWidth = 830;
                           const stageHeight = 600;
 
                           const imgWidth = image.width * imageScale;
@@ -788,50 +863,18 @@ export const UploadResult = ({ onClose, imageUrl }) => {
             </div>
 
             {/* tool bar */}
-            <div className="transition-all duration-300 animated slow rounded-xl flex-grow-0 bg-white shadow-[-5px_2px_5px_0px_rgba(149,_157,_165,_0.2)] p-3 flex flex-col">
-              <div className="flex flex-col justify-start items-start flex-1 gap-3">
-                <div className="flex p-2 w-full">
+
+            <div className="transition-all w-md duration-300 animated slow rounded-xl flex-grow-0 bg-white shadow-[-5px_2px_5px_0px_rgba(149,_157,_165,_0.2)] p-3 flex flex-row">
+              {/* 툴바 테스트 */}
+              <div className="transition-all duration-300 animated slow rounded-xl flex-grow-0 bg-white shadow-[-5px_2px_5px_0px_rgba(149,_157,_165,_0.2)] flex flex-col">
+                <div className="flex flex-row justify-start items-start gap-3">
                   <div
-                    className={`flex items-center flex-shrink-0 justify-between gap-3 bg-white bg-opacity-80 rounded-full px-6 py-3 shadow-lg max-w-md transition-colors duration-300 hover:shadow-xl backdrop-blur-md hover:bg-opacity-90 ${
+                    className={`flex items-center flex-col flex-shrink-0 justify-between gap-3 bg-white bg-opacity-80 rounded-full px-1 py-3 max-w-md transition-colors duration-300 hover:bg-opacity-90 ${
                       drawingMode
                         ? "border-2 border-blue-500"
                         : "border-3 border-transparent"
                     }`}
                   >
-                    {/* tool bar 삭제 버튼 */}
-                    <div className="group relative justify-center flex">
-                      <button
-                        onClick={handleDelete}
-                        disabled={
-                          (selectedRectId === null &&
-                            selectedMascotImageId === null) ||
-                          drawingMode
-                        }
-                        className="focus:outline-none mx-2 transition-transform disabled:opacity-50 disabled:cursor-not-allowed scale-110 group-hover:scale-130 duration-200 ease-in-out rounded-full group cursor-pointer outline-none border bg-[#F87171] border-[#EF4444] text-white hover:bg-[#EF4444]"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="size-7 p-1 transform transition-transform duration-300 hover:text-white group-active:stroke-blue-200 group-active:duration-0"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                          />
-                        </svg>
-                      </button>
-                      <span className="absolute -top-12.5 left-1/2 transform text-nowrap -translate-x-1/2 z-20 px-4 py-2 text-sm text-white bg-blue-600/50 rounded-lg shadow-lg transition-transform duration-300 ease-in-out scale-0 group-hover:scale-100">
-                        {(selectedRectId === null &&
-                          selectedMascotImageId === null) ||
-                        drawingMode
-                          ? "객체를 선택하세요"
-                          : "삭제"}
-                      </span>
-                    </div>
                     {/* tool bar 추가 버튼 */}
                     <div className="group relative justify-center flex">
                       <button
@@ -858,10 +901,56 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                           ></path>
                         </svg>
                       </button>
-                      <span className="absolute -top-12 left-1/2 transform text-nowrap -translate-x-1/2 z-20 px-4 py-2 text-sm text-white bg-blue-600/50 rounded-lg shadow-lg transition-transform duration-300 ease-in-out scale-0 group-hover:scale-100">
+                      <span
+                        className={`absolute  -bottom-1 transform text-nowrap -translate-x-1/2 z-20 px-4 py-2 text-sm text-white bg-blue-600/50 rounded-lg shadow-lg transition-transform duration-300 ease-in-out scale-0 group-hover:scale-100
+                      ${drawingMode ? "-left-12" : "-left-9"}`}
+                      >
                         {drawingMode ? "선택 모드" : "추가"}
                       </span>
                     </div>
+                    <div className="group relative justify-center flex">
+                      <button
+                        onClick={handleDelete}
+                        disabled={
+                          (selectedRectId === null &&
+                            selectedMascotImageId === null) ||
+                          drawingMode
+                        }
+                        className="focus:outline-none mx-2 transition-transform disabled:opacity-50 disabled:cursor-not-allowed scale-110 group-hover:scale-130 duration-200 ease-in-out rounded-full group cursor-pointer outline-none border bg-[#F87171] border-[#EF4444] text-white hover:bg-[#EF4444]"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="size-7 p-1 transform transition-transform duration-300 hover:text-white group-active:stroke-blue-200 group-active:duration-0"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                          />
+                        </svg>
+                      </button>
+                      <span
+                        className={`absolute transform text-nowrap -translate-x-1/2 z-20 px-4 py-2 text-sm text-white bg-blue-600/50 rounded-lg shadow-lg transition-transform duration-300 ease-in-out scale-0 group-hover:scale-100 
+                        ${
+                          (selectedRectId === null &&
+                            selectedMascotImageId === null) ||
+                          drawingMode
+                            ? "-left-18"
+                            : "-left-9"
+                        }`}
+                      >
+                        {(selectedRectId === null &&
+                          selectedMascotImageId === null) ||
+                        drawingMode
+                          ? "객체를 선택하세요"
+                          : "삭제"}
+                      </span>
+                    </div>
+                    {/* Undo/Redo 버튼들 */}
                     {/* tool bar 이전 버튼 */}
                     <div className="group relative justify-center flex">
                       <button
@@ -886,7 +975,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                           />
                         </svg>
                       </button>
-                      <span className="absolute -top-13 left-1/2 text-nowrap transform -translate-x-1/2 z-20 px-4 py-2 text-sm text-white bg-blue-600/50 rounded-lg shadow-lg transition-transform duration-300 ease-in-out scale-0 group-hover:scale-100">
+                      <span className="absolute -left-9 -bottom-1 text-nowrap transform -translate-x-1/2 z-20 px-4 py-2 text-sm text-white bg-blue-600/50 rounded-lg shadow-lg transition-transform duration-300 ease-in-out scale-0 group-hover:scale-100">
                         이전
                       </span>
                     </div>
@@ -916,7 +1005,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                           />
                         </svg>
                       </button>
-                      <span className="absolute -top-13 left-1/2 text-nowrap transform -translate-x-1/2 z-20 px-4 py-2 text-sm text-white bg-blue-600/50 rounded-lg shadow-lg transition-transform duration-300 ease-in-out scale-0 group-hover:scale-100">
+                      <span className="absolute -left-10 -bottom-1 text-nowrap transform -translate-x-1/2 z-20 px-4 py-2 text-sm text-white bg-blue-600/50 rounded-lg shadow-lg transition-transform duration-300 ease-in-out scale-0 group-hover:scale-100">
                         앞으로
                       </span>
                     </div>
@@ -941,13 +1030,17 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                           />
                         </svg>
                       </button>
-                      <span className="absolute -top-12.5 left-1/2 transform text-nowrap -translate-x-1/2 z-20 px-4 py-2 text-sm text-white bg-blue-600/50 rounded-lg shadow-lg transition-transform duration-300 ease-in-out scale-0 group-hover:scale-100">
+                      <span className="absolute -left-12 -bottom-1 transform text-nowrap -translate-x-1/2 z-20 px-4 py-2 text-sm text-white bg-blue-600/50 rounded-lg shadow-lg transition-transform duration-300 ease-in-out scale-0 group-hover:scale-100">
                         다운로드
                       </span>
                     </div>
                   </div>
                 </div>
-
+              </div>
+              <div className="flex flex-col justify-start items-start flex-1 gap-3">
+                <div className="h-1/2 w-full overflow-scroll">
+                  <ToolButton founds={founds} findings={findings} />
+                </div>
                 {/* ✨ 추가: 구분선 */}
                 <hr className="w-full border-gray-300 my-2" />
 
@@ -957,7 +1050,10 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                   <button
                     onClick={() => {
                       setFaceVisible(!faceVisible);
-                      if (textVisible) setTextVisible(!textVisible);
+                      if (textVisible || legalVisible) {
+                        setTextVisible(false);
+                        setLegalVisible(false);
+                      }
                     }}
                     className="px-1 py-2 shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)] rounded hover:ring-blue-300 hover:ring-2 focus:ring-blue-300 focus:ring-2 flex-1 flex items-center justify-center hover:ease-in-out transition"
                   >
@@ -980,7 +1076,10 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                   <button
                     onClick={() => {
                       setTextVisible(!textVisible);
-                      if (faceVisible) setFaceVisible(!faceVisible);
+                      if (faceVisible || legalVisible) {
+                        setFaceVisible(false);
+                        setLegalVisible(false);
+                      }
                     }}
                     className="px-1 py-2 shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)] rounded hover:ring-blue-300 hover:ring-2 focus:ring-blue-300 focus:ring-2 flex-1 flex items-center justify-center hover:ease-in-out transition"
                   >
@@ -999,23 +1098,6 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                       />
                     </svg>
                   </button>
-
-                  <button className="px-1 py-2 shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)] rounded hover:ring-blue-300 hover:ring-2 focus:ring-blue-300 focus:ring-2 flex-1 flex items-center justify-center hover:ease-in-out transition">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2}
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971Z"
-                      />
-                    </svg>
-                  </button>
                 </div>
 
                 {/* ✨ 추가: 구분선 */}
@@ -1023,7 +1105,7 @@ export const UploadResult = ({ onClose, imageUrl }) => {
 
                 {textVisible && (
                   <>
-                    <div className="px-2 w-full">
+                    <div className="px-2 w-full h-1/2 overflow-scroll">
                       {/* 현재 선택된 색상 정보 표시 영역 */}
                       <div className="mb-2 flex justify-between items-center p-2 bg-white rounded-lg shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)]">
                         {/* 선택된 색상의 이름 표시 
@@ -1130,22 +1212,24 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                 )}
 
                 {faceVisible && (
-                  <div className="px-2 w-full">
-                    <div className="mb-2 flex flex-col gap-3 p-2 bg-white rounded-lg shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)]">
+                  <div className="px-2 w-full h-1/2 overflow-scroll">
+                    <div className="mb-2 flex flex-col gap-3 p-3 bg-white rounded-lg shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)]">
                       <p className="text-sm font-medium">얼굴 가리기</p>
                       <div className="flex-1 bg-white rounded-xl shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)] p-2">
                         {/* 여기서 FileUploader를 사용하여 마스코트 이미지 업로드 */}
                         <FileUploader
-                          filetype="이미지"
-                          fileExtensions={["png", "jpg", "jpeg", "gif"]}
-                          fileExtensionsText="PNG, JPG, JPEG, GIF"
+                          filetype="마스코트"
+                          fileExtensions={["png", "jpg", "jpeg"]}
+                          fileExtensionsText="PNG, JPG, JPEG"
                           onFileSelect={(file) => {
+                            setMascotFile(file);
                             // 파일이 선택되면 URL 생성
                             const mascotImageUrl = URL.createObjectURL(file);
                             // MASCOT_IMAGE_URL 대신 이 URL 사용
                             // 상태에 저장
                             setMascotImageUrl(mascotImageUrl);
                           }}
+                          selectedFile={mascotFile}
                         />
                         <button
                           onClick={() => {
@@ -1156,18 +1240,18 @@ export const UploadResult = ({ onClose, imageUrl }) => {
                               alert("먼저 마스코트 이미지를 업로드해주세요");
                             }
                           }}
-                          className="w-full mt-2 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                          className="w-full bg-gray-100 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors"
                         >
-                          마스코트로 가리기
+                          마스코트 추가하기
                         </button>
                       </div>
                       <div className="flex flex-col gap-2 bg-white rounded-xl shadow-[0px_1px_5px_1px_rgba(0,_0,_0,_0.1)] p-2">
                         <p className="text-sm font-medium">효과 적용</p>
                         <div className="flex gap-2">
-                          <button className="px-3 py-2 bg-blue-500 text-white rounded-lg flex-1 hover:bg-blue-600 transition-colors">
+                          <button className="px-3 py-2 bg-gray-100 rounded-lg flex-1 hover:bg-blue-500 hover:text-white transition-colors">
                             블러로 가리기
                           </button>
-                          <button className="px-3 py-2 bg-gray-100 rounded-lg flex-1 hover:bg-gray-200 transition-colors">
+                          <button className="px-3 py-2 bg-gray-100 rounded-lg flex-1 hover:bg-blue-500 hover:text-white transition-colors">
                             모자이크로 가리기
                           </button>
                         </div>

@@ -140,16 +140,20 @@ def mask_faces(image_path: str, mode: str = "mascot"):
     detections_raw = results[0].boxes.data
 
     if detections_raw is None or len(detections_raw) == 0:
-        return _save_output(image_path, image), {"face": "none", "image": "none", "text": "none"}, False
+        return _save_output(image_path, image), {"face": "none", "image": "none", "text": "none"}, False, []
 
     detections = detections_raw.cpu().numpy()
     face_found = False
+    face_bboxes = [] 
 
     for i, det in enumerate(detections):
         if len(det) < 4:
             continue
-
+        if det.shape[0] < 4:
+            continue  # bbox 정보 부족 → 무시
         x1, y1, x2, y2 = det[:4].astype(int)
+        face_bboxes.append((x1, y1, x2, y2))
+
         face_crop = image[y1:y2, x1:x2]
         if face_crop.size == 0:
             continue
@@ -187,4 +191,4 @@ def mask_faces(image_path: str, mode: str = "mascot"):
         face_found = True
 
     output_path = _save_output(image_path, image, mode=mode)
-    return output_path, {"face": mode, "image": mode, "text": "none"}, face_found
+    return output_path, {"face": mode, "image": mode, "text": "none"}, face_found, face_bboxes

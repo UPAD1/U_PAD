@@ -5,6 +5,8 @@ import { useState } from "react";
 import { UploadResult } from "../components/UploadResult";
 import UploaderPage from "../components/UploaderPage";
 import UploadIntro from "../components/UploadIntro";
+//import UploadResultNew from "../components/UploadResultNew"; // 새로운 컴포넌트 임포트
+//import { LawDataTest } from "../components/lawdatatest";
 
 function Image() {
   const [file1, setFile1] = useState(null);
@@ -29,14 +31,19 @@ function Image() {
   return (
     <>
       {uploadResult?.type === "success" ? (
-        <div className="grid py-8 px-8 h-screen shado bg-gradient-to-b from-[#fcfcfc] from-50% to-[#a2cbeb] place-content-center dark:bg-gray-900 rounded-b-[70px]">
-          <div className="mx-auto w-full pt-7 px-5">
-            <UploadResult
-              onClose={handleClose}
-              imageUrl={uploadResult.content.img_path}
-            />
+        <>
+          <div className="grid py-3 px-8 h-screen shado bg-gradient-to-b from-[#fcfcfc] from-50% to-[#a2cbeb] place-content-center dark:bg-gray-900 rounded-b-[70px]">
+            <div className="mx-auto w-full pt-3 px-5">
+              <UploadResult
+                onClose={handleClose}
+                imageUrl={uploadResult.content.img_path}
+                founds={uploadResult.content.found}
+                findings={uploadResult.content.findings.length}
+              />
+            </div>
           </div>
-        </div>
+          
+        </>
       ) : (
         <HeaderPage
           strong="<이미지 마스킹>"
@@ -44,24 +51,18 @@ function Image() {
         >
           <UploaderPage
             fileUploadData1={{
-              filetype: "image1",
+              filetype: "image",
               fileExtensions: ".jpg, .jpeg, .png",
               fileExtensionsText: "JPG, JPEG, PNG",
               onFileSelect: setFile1,
               selectedFile: file1,
-            }}
-            fileUploadData2={{
-              filetype: "image2",
-              fileExtensions: ".jpg, .jpeg, .png",
-              fileExtensionsText: "JPG, JPEG, PNG",
-              onFileSelect: setFile2,
-              selectedFile: file2,
             }}
             onFileUpload={handleUploadComplete}
             pageId={"image"}
           />
         </HeaderPage>
       )}
+
       <UploadIntro
         imageSrc="/preview.png"
         title="How to mask your images in 3 easy steps"
@@ -114,13 +115,17 @@ function Image() {
     </>
   );
 }
+// file_path 변경 필요
 const handleFileUpload = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("mode", mode); //원하는 모드 선택
 
   try {
-    const response = await axios.post("http://localhost:8001/upload/image", formData);
+    const response = await axios.post(
+      "http://localhost:8001/upload/image",
+      formData
+    );
     const imgPath = response.data.img_path;
 
     if (imgPath) {

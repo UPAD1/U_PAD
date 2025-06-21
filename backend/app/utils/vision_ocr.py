@@ -27,12 +27,21 @@ def normalize_ocr_text(text: str) -> str:
 
     # 주민등록번호 보정 (예: 1234561234567 → 123456-1234567)
     text = re.sub(r'\b(\d{6})(\d{7})\b', r'\1-\2', text)
+    # 주민등록번호 보정 (공백 포함 케이스도 처리)
+    text = re.sub(r'\b(\d{6})[\s\-]*(\d{7})\b', r'\1-\2', text)
 
     # 이메일 보정 (예: hello @ naver.com → hello@naver.com)
     text = re.sub(r'\b([\w\.-]+)\s*[@\s]?\s*([a-z]+\.[a-z]{2,3})\b', r'\1@\2', text)
 
     return text
 
+def text_match(quote: str, text: str) -> bool:
+    """
+    공백 제거한 정규화 텍스트 기반으로 민감정보 매칭 여부 판단
+    """
+    q = normalize_ocr_text(quote).replace(" ", "")
+    t = normalize_ocr_text(text).replace(" ", "")
+    return q in t
 
 # ✅ 전체 텍스트만 추출
 def extract_text_from_image_gvision(image_path: str) -> str:
@@ -59,55 +68,68 @@ def extract_text_from_image_gvision(image_path: str) -> str:
 def process_image_with_blocks(file_path: str) -> Tuple[str, str, List[Dict]]:
     """
     이미지에서 텍스트 및 각 OCR 블록의 좌표와 텍스트 추출
+    실패 시에도 안전하게 기본값 반환
     """
-    with open(file_path, "rb") as image_file:
-        content = image_file.read()
+    try:
+        with open(file_path, "rb") as image_file:
+            content = image_file.read()
 
-    image = vision.Image(content=content)
-    response = client.text_detection(image=image)
+        image = vision.Image(content=content)
+        response = client.text_detection(image=image)
 
-    if response.error.message:
-        return file_path, f"[❌ Vision API 오류: {response.error.message}]", []
+        # Vision API 오류 처리
+        if response.error.message:
+            print(f"[❌ Vision API 오류] {response.error.message}")
+            return file_path, "", []
 
-    annotations = response.text_annotations
-    if not annotations:
-        return file_path, "[⚠️ OCR 결과 없음]", []
+        annotations = response.text_annotations
+        if not annotations:
+            print("[⚠️ OCR 결과 없음]")
+            return file_path, "", []
 
-    extracted_text = annotations[0].description.strip()
-    ocr_blocks = []
+        extracted_text = annotations[0].description.strip()
+        ocr_blocks = []
 
-    for ann in annotations[1:]:  # 첫 번째는 전체 텍스트
-        box = ann.bounding_poly.vertices
-        x1 = min(v.x for v in box)
-        y1 = min(v.y for v in box)
-        x2 = max(v.x for v in box)
-        y2 = max(v.y for v in box)
+        for ann in annotations[1:]:  # 첫 번째는 전체 텍스트
+            box = ann.bounding_poly.vertices
+            if len(box) < 4:
+                continue  # vertex 정보 부족 시 스킵
 
-        ocr_blocks.append({
-            "text": ann.description,
-            "bbox": (x1, y1, x2, y2)
-        })
+            x1 = min(v.x for v in box)
+            y1 = min(v.y for v in box)
+            x2 = max(v.x for v in box)
+            y2 = max(v.y for v in box)
 
-    return file_path, extracted_text, ocr_blocks
+            ocr_blocks.append({
+                "text": ann.description,
+                "bbox": (x1, y1, x2, y2)
+            })
+
+        return file_path, extracted_text, ocr_blocks
+
+    except Exception as e:
+        print(f"[ERROR] process_image_with_blocks 실패: {e}")
+        return file_path, "", []
+
+def is_inside(bbox1, bbox2):
+    # bbox1이 bbox2 안에 완전히 포함되는지 확인
+    x1, y1, x2, y2 = bbox1
+    fx1, fy1, fx2, fy2 = bbox2
+    return x1 >= fx1 and y1 >= fy1 and x2 <= fx2 and y2 <= fy2
 
 
-# ✅ 민감정보 블록 마스킹 처리
-def mask_sensitive_info_on_image(
+"""def mask_sensitive_info_on_image(
     image_path: str,
     ocr_blocks: List[Dict],
     findings: List[Dict],
-    output_path: str
+    output_path: str,
+    face_bboxes: List[Tuple[int, int, int, int]] = []  # 얼굴 bounding box 리스트
 ) -> str:
-    """
-    OCR 블록 중 민감정보(`findings`)와 일치하는 텍스트 영역을 블랙박스로 마스킹
-    """
     image = Image.open(image_path).convert("RGB")
     draw = ImageDraw.Draw(image)
 
     for finding in findings:
-        quote = finding.get("quote")
-        if not quote:
-            continue
+        quote = finding["quote"]
         for block in ocr_blocks:
             if quote in block["text"]:
                 x1, y1, x2, y2 = block["bbox"]
@@ -115,3 +137,90 @@ def mask_sensitive_info_on_image(
 
     image.save(output_path)
     return output_path
+
+# ✅ 민감정보 블록 마스킹 처리
+def mask_sensitive_info_on_image(
+    image_path: str,
+    ocr_blocks: List[Dict],
+    findings: List[Dict],
+    output_path: str,
+    face_bboxes: List[Tuple[int, int, int, int]] = []
+) -> str:
+    
+    #OCR 블록 중 민감정보(`findings`)와 일치하는 텍스트 영역을 블랙박스로 마스킹
+    
+    image = Image.open(image_path).convert("RGB")
+    draw = ImageDraw.Draw(image)
+    # 연속 블록 텍스트 병합 후 quote 포함 여부 확인
+    for finding in findings:
+        quote = finding.get("quote")
+        if not quote:
+            continue
+
+        # normalize된 quote
+        q_norm = normalize_ocr_text(quote).replace(" ", "")
+        for i in range(len(ocr_blocks)):
+            concat_text = ""
+            matched_blocks = []
+            for j in range(i, len(ocr_blocks)):
+                t_norm = normalize_ocr_text(ocr_blocks[j]["text"]).replace(" ", "")
+                concat_text += t_norm
+                matched_blocks.append(ocr_blocks[j])
+                if q_norm in concat_text:
+                    for b in matched_blocks:
+                        draw.rectangle(b["bbox"], fill="black")
+                    break
+
+        
+
+    image.save(output_path)
+    return output_path"""
+def mask_sensitive_info_on_image(
+    image_path: str,
+    ocr_blocks: List[Dict],
+    findings: List[Dict],
+    output_path: str,
+    face_bboxes: List[Tuple[int, int, int, int]] = []
+) -> str:
+    """
+    OCR 블록 중 민감정보(`findings`)와 일치하는 텍스트 영역을 블랙박스로 마스킹
+    """
+    image = Image.open(image_path).convert("RGB")
+    draw = ImageDraw.Draw(image)
+    already_masked = set()  # 중복 마스킹 방지용
+
+    for finding in findings:
+        quote = finding.get("quote")
+        if not quote:
+            continue
+
+        q_norm = normalize_ocr_text(quote).replace(" ", "")
+
+        for i in range(len(ocr_blocks)):
+            concat_text = ""
+            matched_blocks = []
+
+            for j in range(i, len(ocr_blocks)):
+                block = ocr_blocks[j]
+                b_text = normalize_ocr_text(block["text"]).replace(" ", "")
+                concat_text += b_text
+                matched_blocks.append(block)
+
+                if q_norm in concat_text:
+                    for b in matched_blocks:
+                        bbox = b["bbox"]
+
+                        # 💡 이미 마스킹했거나 얼굴 내부이면 skip
+                        if tuple(bbox) in already_masked:
+                            continue
+                        if any(is_inside(bbox, face_bbox) for face_bbox in face_bboxes):
+                            continue
+
+                        draw.rectangle(bbox, fill="black")
+                        already_masked.add(tuple(bbox))
+                    break
+
+    image.save(output_path)
+    return output_path
+
+    

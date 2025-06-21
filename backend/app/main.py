@@ -8,6 +8,7 @@ import shutil
 import os
 import uuid
 from fastapi.responses import JSONResponse
+import json
 
 
 
@@ -17,12 +18,12 @@ from app import crud, database
 
 from app.utils.face_mascot_blur import mask_faces
 #from app.utils.video import process_video
-#from app.utils.ocr import process_document
+from app.utils.text_ocr_dlp import process_document_with_dlp
 from app.utils.toonify import run_dualstyle_toonify
 from app.routers import upload, result
-from app.routers import face_mask
-#from app.dlp import app as dlp_app
-#from app.dlp import inspect_text
+#from app.routers import face_mask
+from app.dlp import app as dlp_app
+from app.dlp import inspect_text
 from app.database import Base, engine
 from app import models
 from fastapi.middleware.cors import CORSMiddleware
@@ -43,13 +44,11 @@ app.add_middleware(
 )
 
 app.include_router(upload.router)
-#app.include_router(ocr.router)
-#app.include_router(masking.router)
 app.include_router(result.router)
-#app.include_router(mask_mascot.router)
+
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-#app.mount("/dlp", dlp_app)
+app.mount("/dlp", dlp_app)
 templates = Jinja2Templates(directory="app/templates")
 
 UPLOAD_DIR_DOC = "static/uploads/document"
@@ -80,16 +79,22 @@ def document_upload_page(request: Request):
     })
 
 
-@app.post("/upload/document", response_class=HTMLResponse)
-async def upload_document(request: Request, file: UploadFile = File(...), db: Session = Depends(database.get_db)):
+@app.post("/upload/document")
+async def upload_document(
+    request: Request,
+    file: UploadFile = File(...),
+    db: Session = Depends(database.get_db)
+):
     filename = f"{uuid.uuid4().hex}_{file.filename}"
     file_path = os.path.join(UPLOAD_DIR_DOC, filename)
+
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    """
+
     try:
-        result_docs, text = process_document(file_path)
-        print(f"[INFO] 문서 OCR 완료: {file_path}")
+        result = process_document_with_dlp(file_path)
+        text = result["text"]
+        findings = result["findings"]
 
         crud.create_upload(
             db=db,
@@ -101,22 +106,26 @@ async def upload_document(request: Request, file: UploadFile = File(...), db: Se
         )
     except Exception as e:
         print(f"[ERROR] 문서 처리 실패: {e}")
-        result_docs, text = [], "문서 처리 실패"
-    """
-    #dlp_result = await inspect_text(text=text)
-    #findings = dlp_result.get("findings", [])
-    findings =[]
+        text = "문서 처리 실패"
+        findings = []
 
-    return templates.TemplateResponse("document_upload.html", {
-        "request": request,
-        "doc_path": "/" + file_path.replace("\\", "/"),
-        "images": ["/" + path for path in result_docs],
-        "text": text,
-        "findings": findings
-    })
+    # JSON 파일 저장
+    result_json_path = os.path.join(
+        "static/output",
+        f"{filename.split('_')[0]}.json"
+    )
+    with open(result_json_path, "w", encoding="utf-8") as f:
+        json.dump({"text": text, "findings": findings}, f, ensure_ascii=False, indent=2)
 
+    return JSONResponse(
+        content={
+            "doc_path": "/" + file_path.replace("\\", "/"),
+            "text": text,
+            "findings": findings
+        }
+    )
 
-# ================================
+#===============================
 # 이미지 업로드
 # ================================
 
@@ -135,8 +144,9 @@ async def upload_image(
     db: Session = Depends(database.get_db)
 ):
     assert mode in ["mascot", "blur", "toonify"], "Invalid mode"
+    OUTPUT_DIR = "static/output"
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    # 1. 파일 저장
     filename = f"{uuid.uuid4().hex}_{file.filename}"
     file_path = os.path.join(UPLOAD_DIR_IMG, filename)
     with open(file_path, "wb") as buffer:
@@ -147,38 +157,45 @@ async def upload_image(
     os.makedirs(processed_dir, exist_ok=True)
     processed_path = os.path.join(processed_dir, f"{mode}.jpg")
 
+    face_bboxes = []
+
     try:
-        # 2. 얼굴 마스킹 or 캐릭터화
         if mode in ["mascot", "blur"]:
-            masked_path, meta, found = mask_faces(file_path, mode=mode)
+            masked_path, meta, found, face_bboxes = mask_faces(file_path, mode=mode)
         elif mode == "toonify":
             masked_path = run_dualstyle_toonify(file_path)
             meta = {"face": "stylized", "image": "toon", "text": "none"}
             found = True
+            
 
-        # 3. OCR 수행 및 텍스트 정규화
         _, extracted_text, ocr_blocks = process_image_with_blocks(masked_path)
         cleaned_text = normalize_ocr_text(extracted_text)
+
+        if not ocr_blocks:
+            extracted_text = ""
+            ocr_blocks = []
 
         for block in ocr_blocks:
             block["text"] = normalize_ocr_text(block["text"])
 
-        # 4. 민감정보 감지 (mock): 이름, 전화번호, 주민번호 등 키워드 기반
-        findings = [
-            {"quote": block["text"], "bbox": block["bbox"]}
-            for block in ocr_blocks
-            if any(keyword in block["text"].lower() for keyword in ["name", "id", "phone", "email"])
-        ]
+        dlp_result = await inspect_text(text=cleaned_text)
+        dlp_findings = dlp_result.get("findings", [])
+        findings = []
 
-        # 5. 민감정보 영역 마스킹
+        for block in ocr_blocks:
+            block_text = normalize_ocr_text(block["text"])
+            for f in dlp_findings:
+                if normalize_ocr_text(f["quote"]) in block_text:
+                    findings.append({"quote": f["quote"], "bbox": block["bbox"]})
+
         mask_sensitive_info_on_image(
             image_path=masked_path,
             ocr_blocks=ocr_blocks,
             findings=findings,
-            output_path=processed_path
+            output_path=processed_path,
+            face_bboxes=face_bboxes
         )
 
-        # 6. DB 저장
         upload_record = crud.create_upload(
             db=db,
             filename=filename,
@@ -203,10 +220,21 @@ async def upload_image(
         meta = {"error": str(e)}
         ocr_blocks = []
 
-    print("[DEBUG] 전처리 전:", extracted_text)
+    #print("[DEBUG] 전처리 전:", extracted_text)
     print("[DEBUG] 전처리 후:", cleaned_text)
 
-
+    result_json_path = os.path.join(OUTPUT_DIR, f"{uuid_part}.json")
+    with open(result_json_path, "w", encoding="utf-8") as f:
+        json.dump({
+            "img_path": "/" + processed_path.replace("\\", "/"),
+            "text": cleaned_text,
+            "mode": mode,
+            "found": found,
+            "findings": findings,
+            "metadata": meta,
+            "ocr_blocks": ocr_blocks,
+            "uuid": uuid_part
+        }, f, ensure_ascii=False, indent=2)
     return JSONResponse(
         content={
             "img_path": "/" + processed_path.replace("\\", "/"),
@@ -219,46 +247,7 @@ async def upload_image(
             "uuid": uuid_part
         }
     )
-
 """
-@app.post("/upload/image", response_class=HTMLResponse)
-async def upload_image(request: Request, file: UploadFile = File(...), db: Session = Depends(database.get_db)):
-    filename = f"{uuid.uuid4().hex}_{file.filename}"
-    file_path = os.path.join(UPLOAD_DIR_IMG, filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    try:
-        masked_path = face_mask(file_path)
-        extracted_text = "블러 또는 마스코트 오버레이  완료"
-        print(f"[INFO] 이미지 처리 완료: {masked_path}")
-
-        crud.create_upload(
-            db=db,
-            filename=filename,
-            upload_path=masked_path.replace("\\", "/"),
-            text=extracted_text,
-            created_at=datetime.utcnow(),
-            file_type="image"
-        )
-
-    except Exception as e:
-        print(f"[ERROR] 이미지 처리 실패: {e}")
-        masked_path = file_path
-        extracted_text = "이미지 처리 실패"
-
-    #dlp_result = await inspect_text(text=extracted_text)
-    #findings = dlp_result.get("findings", [])
-    findings = []
-
-
-    return templates.TemplateResponse("image_upload.html", {
-        "request": request,
-        "img_path": "/" + masked_path.replace("\\", "/"),
-        "text": extracted_text,
-        "findings": findings
-    })
-
 # ================================
 # 디즈니풍 캐릭터화 업로드
 # ================================
