@@ -1,26 +1,24 @@
-import React, { useState, useEffect } from "react";
+// ✅ UploadResultDocument.jsx
+import React from "react";
 
-const ResultDocument = ({ onClose, text, findings, ocr_blocks, filename }) => {
-  const [docFilename, setDocFilename] = useState("");
-
-  useEffect(() => {
-    if (filename) {
-      setDocFilename(filename);
-    }
-    console.log("📄 text:", text);
-    console.log("📄 findings:", findings);
-    console.log("📄 ocr_blocks:", ocr_blocks);
-  }, [filename, text, findings, ocr_blocks]);
+const UploadResultDocument = ({ onClose, text, findings, ocr_blocks, filename }) => {
+  const handleDownload = () => {
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename || "masked_document.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="min-w-5xl max-w-7xl mt-10 justify-center bg-gray-50 rounded-2xl p-6 mx-auto fadeInUp animated faster">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-        문서 비식별화 결과
-      </h2>
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800">문서 비식별화 결과</h2>
 
-      {docFilename && (
+      {filename && (
         <div className="mb-4 text-gray-500 text-sm">
-          업로드된 파일: <span className="font-medium">{docFilename}</span>
+          업로드된 파일: <span className="font-medium">{filename}</span>
         </div>
       )}
 
@@ -39,7 +37,7 @@ const ResultDocument = ({ onClose, text, findings, ocr_blocks, filename }) => {
           <ul className="list-disc list-inside text-sm text-gray-700">
             {findings.map((item, idx) => (
               <li key={idx} className="mb-1">
-                <strong>{item.info_type || "Sensitive Data"}:</strong> {item.quote}
+                <strong>{item.info_type || "민감정보"}:</strong> {item.quote}
               </li>
             ))}
           </ul>
@@ -62,10 +60,16 @@ const ResultDocument = ({ onClose, text, findings, ocr_blocks, filename }) => {
         </div>
       )}
 
-      <div className="text-center mt-4">
+      <div className="text-center mt-4 flex gap-4 justify-center">
+        <button
+          onClick={handleDownload}
+          className="px-5 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          다운로드
+        </button>
         <button
           onClick={onClose}
-          className="px-5 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          className="px-5 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           다시 업로드하기
         </button>
@@ -74,4 +78,4 @@ const ResultDocument = ({ onClose, text, findings, ocr_blocks, filename }) => {
   );
 };
 
-export default ResultDocument;
+export default UploadResultDocument;

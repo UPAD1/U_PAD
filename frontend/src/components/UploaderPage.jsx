@@ -10,7 +10,6 @@ const UploaderPage = ({ fileUploadData1, onFileUpload }) => {
   const [uploadId, setUploadId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // 업로드 경로 설정
   const getUploadPath = () => {
     switch (fileUploadData1.filetype.toLowerCase()) {
       case "document":
@@ -28,13 +27,13 @@ const UploaderPage = ({ fileUploadData1, onFileUpload }) => {
   };
 
   useEffect(() => {
-    const generateUUID = () => {
-      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const generateUUID = () =>
+      "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
         const r = (Math.random() * 16) | 0,
           v = c === "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
       });
-    };
+
     setUploadId(generateUUID());
   }, []);
 
@@ -58,21 +57,6 @@ const UploaderPage = ({ fileUploadData1, onFileUpload }) => {
       formData.append("mask_file", renamedFile);
     }
 
-    console.log("======= FormData 내용 =======");
-    console.log("업로드 ID (UUID):", uploadId);
-    console.log("선택된 마스킹 타입:", maskType);
-    for (let pair of formData.entries()) {
-      if (pair[1] instanceof File) {
-        console.log(pair[0], ":", {
-          name: pair[1].name,
-          type: pair[1].type,
-          size: `${(pair[1].size / 1024).toFixed(2)} KB`,
-        });
-      } else {
-        console.log(pair[0], ":", pair[1]);
-      }
-    }
-    console.log("============================");
     setIsLoading(true);
 
     try {
@@ -88,19 +72,25 @@ const UploaderPage = ({ fileUploadData1, onFileUpload }) => {
       }
 
       const result = await response.json();
-      console.log("업로드 완료:", result);
+      console.log("✅ 업로드 결과:", result);
 
-      if (onFileUpload && result.img_path) {
-        onFileUpload("success", {
-          ...result,
-          img_path: `http://localhost:8001/${result.img_path.replace(/^\/+/, "")}`,
-        });
-      } else {
-        onFileUpload("error", "서버에서 이미지 경로를 반환하지 않았습니다.");
+      if (onFileUpload) {
+        if (fileUploadData1.filetype.toLowerCase() === "document") {
+          // 문서일 경우: uuid 기반 결과 조회
+          onFileUpload("success", { uuid: result.uuid });
+        } else if (result.img_path) {
+          // 이미지/비디오일 경우: img_path 포함 응답
+          onFileUpload("success", {
+            ...result,
+            img_path: `http://localhost:8001/${result.img_path.replace(/^\/+/, "")}`,
+          });
+        } else {
+          onFileUpload("error", "서버에서 결과 경로를 반환하지 않았습니다.");
+        }
       }
     } catch (error) {
-      console.error("업로드 중 오류 발생:", error);
-      onFileUpload?.("error", "업로드 중 오류가 발생했습니다. 네트워크를 확인해주세요.");
+      console.error("❌ 업로드 중 오류 발생:", error);
+      onFileUpload?.("error", "네트워크 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -126,51 +116,53 @@ const UploaderPage = ({ fileUploadData1, onFileUpload }) => {
         />
       </div>
 
-      <div className="mb-5">
-        <h3 className="text-lg font-semibold mb-2">마스킹 옵션 선택</h3>
-        <div className="flex gap-2 justify-center items-center">
-          <div className="flex flex-col items-center relative">
+      {fileUploadData1.filetype.toLowerCase() === "image" && (
+        <div className="mb-5">
+          <h3 className="text-lg font-semibold mb-2">마스킹 옵션 선택</h3>
+          <div className="flex gap-2 justify-center items-center">
+            <div className="flex flex-col items-center relative">
+              <MaskSelectButton
+                selected={maskType === "mascot"}
+                onClick={() => setMaskType("mascot")}
+              >
+                마스코트로 가리기
+              </MaskSelectButton>
+              {maskType === "mascot" && (
+                <div className="absolute -top-15 right-40 w-64 z-10 mt-2 bg-white p-3 rounded-lg border border-gray-200 shadow-lg">
+                  <h4 className="text-sm font-medium mb-2 text-center">
+                    마스코트 이미지 선택
+                  </h4>
+                  <FileUploader
+                    className="max-h-[120px] border border-blue-200"
+                    filetype="마스코트 이미지"
+                    fileExtensions={mascotFileData.fileExtensions}
+                    fileExtensionsText={mascotFileData.fileExtensionsText}
+                    onFileSelect={setMaskFile}
+                    selectedFile={maskFile}
+                  />
+                  <p className="text-xs text-gray-500 text-center">
+                    이미지는 얼굴 위에 덮어씌워집니다
+                  </p>
+                </div>
+              )}
+            </div>
+
             <MaskSelectButton
-              selected={maskType === "mascot"}
-              onClick={() => setMaskType("mascot")}
+              selected={maskType === "toonify"}
+              onClick={() => setMaskType("toonify")}
             >
-              마스코트로 가리기
+              AI 이미지로 가리기
             </MaskSelectButton>
-            {maskType === "mascot" && (
-              <div className="absolute -top-15 right-40 w-64 z-10 mt-2 bg-white p-3 rounded-lg border border-gray-200 shadow-lg">
-                <h4 className="text-sm font-medium mb-2 text-center">
-                  마스코트 이미지 선택
-                </h4>
-                <FileUploader
-                  className="max-h-[120px] border border-blue-200"
-                  filetype="마스코트 이미지"
-                  fileExtensions={mascotFileData.fileExtensions}
-                  fileExtensionsText={mascotFileData.fileExtensionsText}
-                  onFileSelect={setMaskFile}
-                  selectedFile={maskFile}
-                />
-                <p className="text-xs text-gray-500 text-center">
-                  이미지는 얼굴 위에 덮어씌워집니다
-                </p>
-              </div>
-            )}
+
+            <MaskSelectButton
+              selected={maskType === "blur"}
+              onClick={() => setMaskType("blur")}
+            >
+              블러로 가리기
+            </MaskSelectButton>
           </div>
-
-          <MaskSelectButton
-            selected={maskType === "toonify"}
-            onClick={() => setMaskType("toonify")}
-          >
-            AI 이미지로 가리기
-          </MaskSelectButton>
-
-          <MaskSelectButton
-            selected={maskType === "blur"}
-            onClick={() => setMaskType("blur")}
-          >
-            블러로 가리기
-          </MaskSelectButton>
         </div>
-      </div>
+      )}
 
       <p className="text-sm text-gray-500 text-center m-2">
         업로드된 파일은 자동으로 개인정보 탐지 및 비식별화가 진행됩니다.

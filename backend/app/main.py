@@ -78,8 +78,56 @@ def document_upload_page(request: Request):
         "text": ""
     })
 
-
 @app.post("/upload/document")
+async def upload_document(
+    request: Request,
+    file: UploadFile = File(...),
+    db: Session = Depends(database.get_db)
+):
+    filename = f"{uuid.uuid4().hex}_{file.filename}"
+    uuid_part = filename.split("_")[0]  # ✅ uuid 추출
+    file_path = os.path.join(UPLOAD_DIR_DOC, filename)
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    try:
+        result = process_document_with_dlp(file_path)
+        text = result["text"]
+        findings = result["findings"]
+
+        # ✅ JSON 저장 (익명처리된 내용이 저장되어 있다고 가정)
+        json_output_path = os.path.join("static/txt_output", f"{uuid_part}_doc.json")
+        os.makedirs("static/txt_output", exist_ok=True)
+
+        with open(json_output_path, "w", encoding="utf-8") as f:
+            json.dump({
+                "filename": filename,
+                "text": text,
+                "findings": findings,
+                "uuid": uuid_part
+            }, f, ensure_ascii=False, indent=2)
+
+        # ✅ DB 저장
+        crud.create_upload(
+            db=db,
+            filename=filename,
+            upload_path=file_path.replace("\\", "/"),
+            text=text,
+            created_at=datetime.utcnow(),
+            file_type="document"
+        )
+
+    except Exception as e:
+        print(f"[ERROR] 문서 처리 실패: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+    return JSONResponse(
+        content={
+            "uuid": uuid_part  # ✅ 프론트엔드가 필요로 하는 uuid 응답 포함
+        }
+    )
+"""@app.post("/upload/document")
 async def upload_document(
     request: Request,
     file: UploadFile = File(...),
@@ -123,7 +171,7 @@ async def upload_document(
             "text": text,
             "findings": findings
         }
-    )
+    )"""
 
 #===============================
 # 이미지 업로드
