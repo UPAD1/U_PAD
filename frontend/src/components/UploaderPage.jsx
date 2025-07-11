@@ -13,11 +13,11 @@ const UploaderPage = ({ fileUploadData1, onFileUpload }) => {
   const getUploadPath = () => {
     switch (fileUploadData1.filetype.toLowerCase()) {
       case "document":
-        return "http://localhost:8001/upload/document";
+        return "http://128.134.233.158:8001/upload/document";
       case "video":
-        return "http://localhost:8001/upload/video";
+        return "http://128.134.233.158:8001/upload/video";
       default:
-        return "http://localhost:8001/upload/image";
+        return "http://128.134.233.158:8001/upload/image";
     }
   };
 
@@ -82,7 +82,7 @@ const UploaderPage = ({ fileUploadData1, onFileUpload }) => {
           // 이미지/비디오일 경우: img_path 포함 응답
           onFileUpload("success", {
             ...result,
-            img_path: `http://localhost:8001/${result.img_path.replace(/^\/+/, "")}`,
+            img_path: `http://128.134.233.158:8001/${result.img_path.replace(/^\/+/, "")}`,
           });
         } else {
           onFileUpload("error", "서버에서 결과 경로를 반환하지 않았습니다.");

@@ -18,20 +18,24 @@ function Document() {
 
   return (
     <>
-      <HeaderPage
-        strong="<문서 마스킹>"
-        description="문서에 있는 텍스트에서 개인정보를 자동으로 추출 및 마스킹합니다."
-      >
-        <div className="w-full flex flex-col items-center justify-center gap-6">
-          {/* ✅ 분석 결과가 업로더 위에 출력되도록 */}
-          {uploadResult?.uuid && (
+      {/* ✅ 분석 결과가 업로더 위에 출력되도록 */}
+      {uploadResult?.uuid && (
+        <div className="py-8 px-8 h-screen shado bg-gradient-to-b from-[#fcfcfc] from-50% to-[#a2cbeb] place-content-center dark:bg-gray-900 rounded-b-[70px]">
+          <div className="pt-3 px-5">
             <ResultDocumentLoader
               uuid={uploadResult.uuid}
               onClose={() => setUploadResult(null)}
             />
-          )}
+          </div>
+        </div>
+      )}
 
-          {/* 📁 파일 업로드 */}
+      {/* 📁 파일 업로드 / 다시 업로드하기 버튼이 있어서 업로더는 분석 결과에서 빼봤습니다 */}
+      {!uploadResult?.uuid && (
+        <HeaderPage
+          strong="<문서 마스킹>"
+          description="문서에 있는 텍스트에서 개인정보를 자동으로 추출 및 마스킹합니다."
+        >
           <UploaderPage
             fileUploadData1={{
               filetype: "document",
@@ -41,8 +45,8 @@ function Document() {
             }}
             onFileUpload={handleUploadResult}
           />
-        </div>
-      </HeaderPage>
+        </HeaderPage>
+      )}
 
       <UploadIntro
         imageSrc="/preview-doc.png"

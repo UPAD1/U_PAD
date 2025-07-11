@@ -3,3 +3,5 @@ backend/models/*.pkl
 *.Zone.Identifier
 backend/secret/
 backend/models/*.pkl
+backend/secret
+

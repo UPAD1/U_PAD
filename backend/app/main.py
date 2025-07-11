@@ -19,7 +19,7 @@ from app import crud, database
 from app.utils.face_mascot_blur import mask_faces
 #from app.utils.video import process_video
 from app.utils.text_ocr_dlp import process_document_with_dlp
-from app.utils.toonify import run_dualstyle_toonify
+from app.utils.vtoonify import run_vtoonify_d
 from app.routers import upload, result
 #from app.routers import face_mask
 from app.dlp import app as dlp_app
@@ -211,13 +211,13 @@ async def upload_image(
         if mode in ["mascot", "blur"]:
             masked_path, meta, found, face_bboxes = mask_faces(file_path, mode=mode)
         elif mode == "toonify":
-            masked_path = run_dualstyle_toonify(file_path)
+            masked_path = run_vtoonify_d(file_path)
             meta = {"face": "stylized", "image": "toon", "text": "none"}
             found = True
             
 
         _, extracted_text, ocr_blocks = process_image_with_blocks(masked_path)
-        cleaned_text = normalize_ocr_text(extracted_text)
+        cleaned_text = normalize_ocr_text(extracted_text or "")
 
         if not ocr_blocks:
             extracted_text = ""

@@ -10,7 +10,10 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/static': 'http://localhost:8001', // ✅ FastAPI 정적 파일 서버로 프록시
+      '/static': 'http://128.134.233.158:8001',
+      '/upload': 'http://128.134.233.158:8001',
+      'api' : 'http://128.134.233.158:8001',
+      'dlp' :'http://128.134.233.158:8001' // ✅ FastAPI 정적 파일 서버로 프록시
     }
   }
 })

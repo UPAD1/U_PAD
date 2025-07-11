@@ -123,7 +123,7 @@ const handleFileUpload = async (file) => {
 
   try {
     const response = await axios.post(
-      "http://localhost:8001/upload/image",
+      "http://128.134.233.158:8001/upload/image",
       formData
     );
     const imgPath = response.data.img_path;
@@ -133,7 +133,7 @@ const handleFileUpload = async (file) => {
         type: "success",
         content: {
           ...response.data,
-          img_path: `http://localhost:8001/${response.data.img_path}`, // full URL로 전달
+          img_path: `http://128.134.233.158:8001/${response.data.img_path}`, // full URL로 전달
         },
       });
     } else {

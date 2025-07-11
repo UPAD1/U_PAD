@@ -10,11 +10,11 @@ export const Header = forwardRef((props, ref) => {
     <>
       <div
         ref={ref}
-        className="py-16 static px-8 h-screen w-screen items-center flex flex-row bg-gradient-to-b from-[#0e2a50] to-[#42637d] place-content-start dark:bg-gray-900 rounded-b-[150px] overflow-hidden"
+        className="py-16 static px-8 h-screen w-screen items-center flex flex-row bg-gradient-to-b from-[#0e2a50] to-[#42637d] dark:bg-gray-900 rounded-b-[150px] overflow-hidden place-content-between"
       >
         <div className="flex-none max-w-none py-16 pl-[3vw]">
           <div className="mx-auto text-start px-4 fadeInDown animated slow">
-            <h1 className="text-5xl font-bold text-gray-100">
+            <h1 className="text-5xl font-bold text-gray-100 lg:text-6xl">
               {title}
               <br />
 
@@ -56,3 +56,4 @@ export const Header = forwardRef((props, ref) => {
     </>
   );
 });
+
